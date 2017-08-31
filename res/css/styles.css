@@ -81,7 +81,7 @@ body {
     word-spacing:normal;
     padding:0;
     background: none;;
-    background-image:url('/res/img/gui/bottom-nav-button.png');
+    background-image:url('../img/gui/bottom-nav-button.png');
     background-size:cover;
 }
 
@@ -91,11 +91,11 @@ body {
 
 .bottom-nav button.red:active:hover,
 .bottom-nav button.pressed {
-    background-image:url('/res/img/gui/bottom-nav-button-red.png');
+    background-image:url('../img/gui/bottom-nav-button-red.png');
 }
 
 .hero {
-    background-image:url('/res/img/heroes/Map_Lance_Cavalier.png');
+    background-image:url('../img/heroes/Map_Lance_Cavalier.png');
     background-size:cover;
     width:var(--tile-size);
     height:var(--tile-size);

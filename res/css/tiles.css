@@ -41,7 +41,7 @@
 
 .blue-frame .tile-frame {
     animation: 2s tile-background-animation infinite linear;
-    background-image: url('/res/img/gui/Status.png');
+    background-image: url('../img/gui/Status.png');
 }
 
 .blue-background .tile-background {

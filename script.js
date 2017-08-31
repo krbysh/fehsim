@@ -1,7 +1,7 @@
 let map = new FehMap();
-map.backgroundImageUri = '/res/img/maps/S0201.png';
-map.backgroundPatternUri = '/res/img/maps/common/WavePattern.png';
-map.foregroundImageUri = '/res/img/maps/common/CloudAdd.png';
+map.backgroundImageUri = 'res/img/maps/S0201.png';
+map.backgroundPatternUri = 'res/img/maps/common/WavePattern.png';
+map.foregroundImageUri = 'res/img/maps/common/CloudAdd.png';
 map.playerSpaces = [
     [3, 0],
     [4, 0],
