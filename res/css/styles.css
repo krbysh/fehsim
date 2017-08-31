@@ -1,0 +1,106 @@
+:root {
+    --tile-size: 80px;
+    --font-size: 14px;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.game {
+    background:#bfb8b8;
+    width:calc(var(--tile-size) * 6);
+    height:calc(var(--tile-size) * 9);
+    position:relative;
+}
+
+.map {
+    background:#e8e8e8;
+    width:calc(var(--tile-size) * 6);
+    height:calc(var(--tile-size) * 8);
+    position:relative;
+    overflow:hidden;
+}
+
+.map-background-image {
+    width:100%;
+    height:100%;
+    position:absolute;
+    z-index:2;
+    background-size:cover;
+}
+
+@keyframes map-background-pattern-animation {
+    0% { transform: translate(-50%, -50%);}
+    100% { transform: translate(0, 0);}
+}
+
+.map-background-pattern {
+    animation: map-background-pattern-animation 360s infinite linear;
+    width:200%;
+    height:200%;
+    position:absolute;
+    z-index:1;
+}
+
+@keyframes map-foreground-image-animation {
+    0% { transform: translate(-25%, -25%);} /* 1/4 */
+    100% { transform: translate(0, 0);}
+}
+
+.map-foreground-image {
+    animation: map-foreground-image-animation 20s infinite linear;
+    opacity:0.2;
+    background-size:calc(var(--tile-size) * 6);
+    width:calc(var(--tile-size) * 24); /* 6x4 */
+    height:calc(var(--tile-size) * 24); /* 6x4 */
+    position:absolute;
+    z-index:3;
+}
+
+.bottom-nav {
+    background:#797979;
+    height:calc(var(--tile-size) * 1);
+}
+
+.bottom-nav button {
+    width:var(--tile-size);
+    height:var(--tile-size);
+    display:inline-block;
+    margin:0;
+    border:none;
+    cursor:pointer;
+    transition:0.05s;
+    outline:none;
+    font-family:Arial;
+    font-size:var(--font-size);
+    text-align:center;
+    vertical-align: middle;
+    user-select:none;
+    word-spacing:normal;
+    padding:0;
+    background: none;;
+    background-image:url('/res/img/gui/bottom-nav-button.png');
+    background-size:cover;
+}
+
+.bottom-nav button:active:hover {
+    transform:scale(1.05);
+}
+
+.bottom-nav button.red:active:hover,
+.bottom-nav button.pressed {
+    background-image:url('/res/img/gui/bottom-nav-button-red.png');
+}
+
+.hero {
+    background-image:url('/res/img/heroes/Map_Lance_Cavalier.png');
+    background-size:cover;
+    width:var(--tile-size);
+    height:var(--tile-size);
+    position:absolute;
+    z-index: 9;
+    cursor:pointer;
+    transform: translate(0px, 123px);
+}
