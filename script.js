@@ -10,7 +10,6 @@ map.tiles = [
     [TERRAIN_WATER, TERRAIN_WATER, TERRAIN_WATER, TERRAIN_WATER, TERRAIN_WATER, TERRAIN_WATER],
     [TERRAIN_WATER, TERRAIN_WATER, TERRAIN_WATER, TERRAIN_WATER, TERRAIN_WATER, TERRAIN_WATER]
 ]
-
 map.backgroundImageUri = 'res/img/maps/S0201.png';
 map.backgroundPatternUri = 'res/img/maps/common/WavePattern.png';
 map.foregroundImageUri = 'res/img/maps/common/CloudAdd.png';
