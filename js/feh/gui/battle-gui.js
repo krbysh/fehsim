@@ -189,7 +189,6 @@ class FehBattleGui extends FehBattleListener {
             ) {
                 // aqui está mal, el row y el column deberían de sacarse de un path finding, pero nos dá una idea, al menos para moverse
                 this.controller.doAction(this.activeHero, row, column, this.currentActionTarget);
-                this.onAction()
                 return;
             }
 
@@ -201,9 +200,11 @@ class FehBattleGui extends FehBattleListener {
             let tileInMoveRange = this.actionRange.moveRange.find(item => item.row == row && item.column == column);
             let actionableTile = hero ? tileInAttackRange : tileInMoveRange;
 
-            if (actionableTile) {
+            if (actionableTile && hero != this.activeHero) {
                 this.showActionPreview(hero, row, column, actionableTile.content);
                 this.state = GUISTATE_SHOWINT_ACTION_PREVIEW;
+            } else if (hero) {
+                console.log('updateInfoPanel');
             } else if (!tileInAttackRange) {
                 this.clearTiles();
                 this.state = GUISTATE_NULL;
