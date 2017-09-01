@@ -1,4 +1,7 @@
+const GUISTATE_NULL = 'GUISTATE_NULL';
 const GUISTATE_SHOWING_RANGE = 'GUISTATE_SHOWING_RANGE';
+const GUISTATE_SHOWING_ACTIONS = 'GUISTATE_SHOWING_ACTIONS';
+const GUISTATE_SHOWINT_ACTION_PREVIEW = 'GUISTATE_SHOWINT_ACTION_PREVIEW';
 
 class FehBattleGui extends FehBattleListener {
 
@@ -18,6 +21,7 @@ class FehBattleGui extends FehBattleListener {
     rebuild() {
 
         let battle = this.controller.battle;
+        this.state = GUISTATE_NULL;
 
         // CLEAR
         this.rootElement.classList.add('game');
@@ -104,44 +108,12 @@ class FehBattleGui extends FehBattleListener {
 
         this.guiHeroes = [];
 
-        this.tiles = this.getNewTileArray();
+        this.tiles = this.getNewGuiTileArray();
         this.tiles.forEach(row => row.forEach(tile => {
             this.mapInput.appendChild(tile.inputElement);
             this.mapTiles.appendChild(tile.visualElement);
         }));
 
-    }
-
-    /**
-     * 
-     * @param {FehMapHero} hero 
-     * @returns {FehTileGui}
-     */
-    getTileFor(hero) {
-        return this.getTile(hero.row, hero.column);
-    }
-
-    /**
-     * 
-     * @param {Number} row
-     * @param {Number} column 
-     * @returns {FehTileGui}
-     */
-    getTile(row, column) {
-        return this.tiles[row][column];
-    }
-
-    /**
-     * @returns {FehTileGui[][]}
-     */
-    getNewTileArray() {
-        let tiles = [];
-        for (let row = 0; row < 8; row++) {
-            tiles[row] = [];
-            for (let column = 0; column < 6; column++)
-                tiles[row][column] = new FehTileGui(this, row, column);
-        }
-        return tiles;
     }
 
     onStart() {
@@ -193,7 +165,7 @@ class FehBattleGui extends FehBattleListener {
         this.clearTiles();
         if (this.controller.isPlayerPhase()) {
             this.controller.getTeam().forEach(hero => {
-                let tile = this.getTileFor(hero);
+                let tile = this.getGuiTileOf(hero);
                 tile.showBlueFrame();
             })
         }
@@ -205,36 +177,77 @@ class FehBattleGui extends FehBattleListener {
      * @param {Number} column 
      */
     onTile(row, column) {
+
         let hero = this.controller.battle.getTileContent(row, column);
-        if (hero) {
-            if (this.controller.isEnemyHero(hero) || (this.controller.isPlayerHero(hero) && hero.isWaiting)) {
-                this.activeHero = hero;
-                this.state = GUISTATE_SHOWING_RANGE;
-                this.showRangeOf(hero);
+
+        if (this.state == GUISTATE_SHOWINT_ACTION_PREVIEW) {
+
+            if (
+                this.currentActionRow == row &&
+                this.currentActionColumn == column &&
+                this.currentActionTarget == hero
+            ) {
+                // aqui está mal, el row y el column deberían de sacarse de un path finding, pero nos dá una idea, al menos para moverse
+                this.controller.doAction(this.activeHero, row, column, this.currentActionTarget);
+                this.onAction()
+                return;
             }
+
         }
-    }
 
-    /**
-     * 
-     */
-    clearTiles() {
-        this.clearTilesColors();
-        this.clearTilesFrames();
-    }
+        if (this.state == GUISTATE_SHOWING_ACTIONS || this.state == GUISTATE_SHOWINT_ACTION_PREVIEW) {
 
-    /**
-     * 
-     */
-    clearTilesColors() {
-        this.tiles.forEach(row => row.forEach(tile => tile.clearColor()));
-    }
+            let tileInAttackRange = this.actionRange.attackRange.find(item => item.row == row && item.column == column);
+            let tileInMoveRange = this.actionRange.moveRange.find(item => item.row == row && item.column == column);
+            let actionableTile = hero ? tileInAttackRange : tileInMoveRange;
 
-    /**
-     * 
-     */
-    clearTilesFrames() {
-        this.tiles.forEach(row => row.forEach(tile => tile.clearFrame()));
+            if (actionableTile) {
+                this.showActionPreview(hero, row, column, actionableTile.content);
+                this.state = GUISTATE_SHOWINT_ACTION_PREVIEW;
+            } else if (!tileInAttackRange) {
+                this.clearTiles();
+                this.state = GUISTATE_NULL;
+            }
+
+            return;
+        }
+
+        if (hero) {
+
+            if (this.state == GUISTATE_NULL || this.state == GUISTATE_SHOWING_RANGE) {
+
+                if (this.controller.owns(hero) || !hero.isWaiting) {
+                    this.activeHero = hero;
+                    this.state = GUISTATE_SHOWING_ACTIONS;
+                    this.showActionsOf(hero);
+                    return;
+                }
+
+                if (this.controller.isEnemy(hero) || (this.controller.owns(hero) && hero.isWaiting)) {
+                    this.activeHero = hero;
+                    this.state = GUISTATE_SHOWING_RANGE;
+                    this.showRangeOf(hero);
+                    return;
+                }
+
+            }
+
+        } else {
+
+            if (this.state == GUISTATE_SHOWING_RANGE) {
+                this.state = GUISTATE_NULL;
+                this.clearTiles();
+                return;
+            }
+
+            if (this.state == GUISTATE_SHOWING_ACTIONS) {
+                this.state = GUISTATE_NULL;
+                this.clearTiles();
+                return;
+            }
+
+        }
+
     }
 
     /**
@@ -242,10 +255,141 @@ class FehBattleGui extends FehBattleListener {
      * @param {FehMapHero} hero 
      */
     showRangeOf(hero) {
-        this.clearTilesColors();
-        console.log('show range of ' + hero)
-        let tile = this.getTileFor(hero);
-        tile.turnBlue();
+
+        console.log('BattleGui::showRangeOf(FehMapHero)');
+
+        this.clearTileColors();
+        this.clearTileActionables();
+        let range = this.controller.battle.getRangeOf(hero);
+        range.attackRange.forEach(coordinate => {
+            let tile = this.tiles[coordinate.row][coordinate.column];
+            tile.turnRed();
+        });
+        range.moveRange.forEach(coordinate => {
+            let tile = this.tiles[coordinate.row][coordinate.column];
+            tile.turnBlue();
+        });
+    }
+
+    /**
+     * 
+     * @param {FehMapHero} hero 
+     */
+    showActionsOf(hero) {
+
+        console.log('BattleGui::showActionsOf(FehMapHero)');
+
+        this.clearTileColors();
+        this.clearTileActionables();
+        let range = this.controller.battle.getRangeOf(hero);
+        range.attackRange.forEach(coordinate => {
+            let tile = this.tiles[coordinate.row][coordinate.column];
+            tile.turnRed();
+        });
+        range.moveRange.forEach(coordinate => {
+            let tile = this.tiles[coordinate.row][coordinate.column];
+
+            // DIFERENCIA 1
+            if (coordinate.validRestPosition)
+                tile.setActionable();
+            // DIFERENCIA 1 END
+
+            tile.turnBlue();
+        });
+        // DIFERENCIA 2
+        range.attackRange.forEach(coordinate => {
+            let tile = this.tiles[coordinate.row][coordinate.column];
+            if (coordinate.content == hero) return;
+            if (coordinate.content) {
+                tile.setActionable();
+                if (coordinate.content.playerKey == hero.playerKey) {
+                    tile.turnGreen();
+                } else {
+                    tile.turnRed();
+                }
+            }
+        });
+        // DIFERENCIA 2 END
+        this.actionRange = range;
+    }
+
+    /**
+     * 
+     * @param {FehMapHero} hero 
+     * @param {Number} row 
+     * @param {Number} column 
+     * @param {FehMapHero} target
+     */
+    showActionPreview(hero, row, column, target) {
+
+        console.log('BattleGui::showActionPreview(FehMapHero, Number, Number, FehMapHero)');
+
+        this.currentActionRow = row;
+        this.currentActionColumn = column;
+        this.currentActionTarget = target;
+
+    }
+
+    /**
+     * 
+     */
+    clearTiles() {
+        this.clearTileColors();
+        this.clearTileFrames();
+        this.clearTileActionables();
+    }
+
+    /**
+     * 
+     */
+    clearTileActionables() {
+        this.tiles.forEach(row => row.forEach(tile => tile.clearActionable()));
+    }
+
+    /**
+     * 
+     */
+    clearTileColors() {
+        this.tiles.forEach(row => row.forEach(tile => tile.clearColor()));
+    }
+
+    /**
+     * 
+     */
+    clearTileFrames() {
+        this.tiles.forEach(row => row.forEach(tile => tile.clearFrame()));
+    }
+
+    /**
+     * 
+     * @param {FehMapHero} hero 
+     * @returns {FehTileGui}
+     */
+    getGuiTileOf(hero) {
+        return this.getGuiTile(hero.row, hero.column);
+    }
+
+    /**
+     * 
+     * @param {Number} row
+     * @param {Number} column 
+     * @returns {FehTileGui}
+     */
+    getGuiTile(row, column) {
+        return this.tiles[row][column];
+    }
+
+    /**
+     * @returns {FehTileGui[][]}
+     */
+    getNewGuiTileArray() {
+        let tiles = [];
+        for (let row = 0; row < 8; row++) {
+            tiles[row] = [];
+            for (let column = 0; column < 6; column++)
+                tiles[row][column] = new FehTileGui(this, row, column);
+        }
+        return tiles;
     }
 
 }

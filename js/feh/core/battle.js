@@ -5,6 +5,16 @@ const PHASE_SWAP_SPACES = 'Swap Spaces';
 const PHASE_PLAYER = 'Player Phase';
 const PHASE_ENEMY = 'Enemy Phase';
 
+/**
+ * 
+ * @param {any[]} array 
+ * @param {any} element 
+ */
+function removeFromArray(array, element) {
+    const index = array.indexOf(element);
+    array.splice(index, 1);
+}
+
 function isNullOrUndefined(value) {
     if (value === null) return true;
     if (value === undefined) return true;
@@ -236,11 +246,148 @@ class FehBattle {
      * @param {FehMapHero} hero 
      */
     getRangeOf(hero) {
+
         this.validateMapHero(hero);
-        return {
+
+        let searchSpace = [];
+
+        // nodes
+        for (let row = 0; row < 8; row++) {
+            searchSpace[row] = [];
+            for (let column = 0; column < 8; column++) {
+                let node = {
+                    row: row,
+                    column: column,
+                    g: 999,
+                    f: 999,
+                    validRestPosition: true,
+                    content: null,
+                    neighbours: [],
+                    getNeighbourNodes: function (range) {
+                        let nodes = [this];
+                        while (range >= 1) {
+                            nodes.forEach(node => {
+                                node.neighbours.forEach(neighbour => {
+                                    if (nodes.indexOf(neighbour < 0))
+                                        nodes.push(neighbour);
+                                });
+                            })
+                            range--;
+                        }
+                        removeFromArray(nodes, this);
+                        return nodes;
+                    }
+                };
+                searchSpace[row][column] = node;
+            }
+        }
+
+        // neighbours
+        for (let row = 0; row < 8; row++) {
+            for (let column = 0; column < 8; column++) {
+                let neighbours = searchSpace[row][column].neighbours;
+                if (row > 0) neighbours.push(searchSpace[row - 1][column]);
+                if (row < 7) neighbours.push(searchSpace[row + 1][column]);
+                if (column > 0) neighbours.push(searchSpace[row][column - 1]);
+                if (column < 5) neighbours.push(searchSpace[row][column + 1]);
+            }
+        }
+
+
+        let start = searchSpace[hero.row][hero.column];
+        start.g = 0; // The cost of going from start to start is zero.
+
+        /** 
+         * The set of nodes already evaluated */
+        let closedSet = [];
+
+        /** 
+         * The set of currently discovered nodes that are not evaluated yet. 
+         * Initially, only the start node is known. */
+        let openSet = [start];
+
+        let limit = 0;
+
+        while (openSet.length > 0) {
+
+            /**
+             * The node in openSet having the lowest fScore */
+            let current = openSet.sort((a, b) => a.f - b.f)[0];
+
+            removeFromArray(openSet, current);
+            closedSet.push(current);
+
+            let neighbours = current.neighbours;
+
+            neighbours.forEach(neighbour => {
+
+                // TERRAIN CONSTRAINTS
+                let terrain = this.map.tiles[neighbour.row][neighbour.column];
+                if (hero.movementType != MOVEMENT_FLYER) {
+                    if (terrain != TERRAIN_PLAIN)
+                        return;
+                }
+
+                // If neighbor in closedSet
+                if (closedSet.indexOf(neighbour) >= 0) {
+                    // Ignore the neighbor which is already evaluated
+                    return;
+                }
+
+                // If neighbor not in closedSet
+                if (closedSet.indexOf(neighbour) < 0) {
+                    // Discover a new node
+                    openSet.push(neighbour);
+                }
+
+                // All neighbours are at 1 "step" of distance
+                let distanceBetweenCurrentNeighbour = 1;
+
+                /** The distance from start to a neighbor */
+                let tentativeGScore = current.g + distanceBetweenCurrentNeighbour;
+
+                let currentGScore = neighbour.g;
+                if (tentativeGScore >= currentGScore) {
+                    // This is not a better path.
+                    return;
+                }
+
+                // No heuristics please
+                let heuristicCostFromNeighbourToGoal = 0;
+
+                neighbour.cameFrom = current;
+                neighbour.g = tentativeGScore;
+                neighbour.f = neighbour.g + heuristicCostFromNeighbourToGoal;
+
+            });
+
+        }
+
+        // REST POSITIONS
+        this.heroes.forEach(hero => {
+            let node = searchSpace[hero.row][hero.column];
+            node.validRestPosition = false;
+            node.content = this.getTileContent(node.row, node.column);
+        });
+
+        let range = {
             moveRange: [],
             attackRange: []
         }
+
+        searchSpace.forEach(row => row.forEach(node => {
+            if (node.g <= hero.maxSteps)
+                range.moveRange.push(node);
+        }));
+
+        range.moveRange.forEach(node => {
+            let attackRange = node.getNeighbourNodes(hero.attackRange);
+            attackRange.forEach(a => {
+                range.attackRange.push(a);
+            })
+        });
+
+        return range;
     }
 
     /**
@@ -354,11 +501,11 @@ class FehBattle {
         return hero.playerKey != playerKey;
     }
 
-        /**
-     * 
-     * @param {FehMapHero} hero
-     * @param {String} playerKey 
-     */
+    /**
+ * 
+ * @param {FehMapHero} hero
+ * @param {String} playerKey 
+ */
     belongsToPlayer(hero, playerKey) {
         this.validatePlayerKey(playerKey);
         return hero.playerKey == playerKey;

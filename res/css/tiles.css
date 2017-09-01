@@ -45,6 +45,26 @@
 }
 
 .blue-background .tile-background {
-    background-color:hsla(210, 100%, 50%, 0.1666);
-    box-shadow: inset 0 0 30px hsla(210, 100%, 50%, 1);
+    background-color:hsla(215, 100%, 50%, 0.200);
+    box-shadow: inset 0 0 calc(var(--tile-size) * 0.25) hsla(215, 100%, 50%, 0.666);
+}
+
+.green-background .tile-background {
+    background-color:hsla(120, 100%, 50%, 0.2);
+    box-shadow: inset 0 0 calc(var(--tile-size) * 0.25) hsla(120, 100%, 50%, 1);
+}
+
+.red-background .tile-background {
+    background-color:hsla(0, 100%, 50%, 0.175);
+    box-shadow: inset 0 0 calc(var(--tile-size) * 0.25) hsla(0, 100%, 50%, 0.35);
+}
+
+.action.blue-background .tile-background {
+    background-color:hsla(215, 100%, 50%, 0.650);
+    box-shadow: inset 0 0 calc(var(--tile-size) * 0.25) hsla(225, 100%, 50%, 1);
+}
+
+.action.red-background .tile-background {
+    background-color:hsla(0, 100%, 50%, 0.7);
+    box-shadow: inset 0 0 calc(var(--tile-size) * 0.25) hsla(0, 100%, 50%, 1);
 }

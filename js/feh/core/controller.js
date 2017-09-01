@@ -66,7 +66,7 @@ class FehController {
      * 
      * @param {FehMapHero} hero 
      */
-    isPlayerHero(hero) {
+    owns(hero) {
         return this.battle.belongsToPlayer(hero, this.playerKey)
     }
 
@@ -74,7 +74,7 @@ class FehController {
      * 
      * @param {FehMapHero} hero 
      */
-    isEnemyHero(hero) {
+    isEnemy(hero) {
         return this.battle.belongsToEnemy(hero, this.playerKey)
     }
 }

@@ -36,6 +36,14 @@ class FehTileGui {
         this.visualElement.className = 'tile';
     }
 
+    setActionable() {
+        this.visualElement.classList.add('action');
+    }
+
+    clearActionable() {
+        this.visualElement.classList.remove('action');
+    }
+
     clearColor() {
         this.visualElement.classList.remove('red-background');
         this.visualElement.classList.remove('green-background');

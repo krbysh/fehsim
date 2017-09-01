@@ -1,5 +1,5 @@
 :root {
-    --tile-size: 80px;
+    --tile-size: 72px;
     --font-size: 14px;
 }
 
@@ -51,7 +51,7 @@ body {
 
 .map-foreground-image {
     animation: map-foreground-image-animation 20s infinite linear;
-    opacity:0.2;
+    opacity: 0.12;
     background-size:calc(var(--tile-size) * 6);
     width:calc(var(--tile-size) * 24); /* 6x4 */
     height:calc(var(--tile-size) * 24); /* 6x4 */
