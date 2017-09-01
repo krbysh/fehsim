@@ -1,5 +1,6 @@
 let map = new FehMap();
 <<<<<<< HEAD
+<<<<<<< HEAD
 map.tiles = [
     [TERRAIN_WATER, TERRAIN_WATER, TERRAIN_WATER, TERRAIN_WATER, TERRAIN_WATER, TERRAIN_WATER],
     [TERRAIN_WATER, TERRAIN_WATER, TERRAIN_WATER, TERRAIN_WATER, TERRAIN_WATER, TERRAIN_WATER],
@@ -18,6 +19,11 @@ map.backgroundImageUri = 'res/img/maps/S0201.png';
 map.backgroundPatternUri = 'res/img/maps/common/WavePattern.png';
 map.foregroundImageUri = 'res/img/maps/common/CloudAdd.png';
 >>>>>>> resource routes fix
+=======
+map.backgroundImageUri = 'res/img/maps/S0201.png';
+map.backgroundPatternUri = 'res/img/maps/common/WavePattern.png';
+map.foregroundImageUri = 'res/img/maps/common/CloudAdd.png';
+>>>>>>> 4d5d826ce1a89f980c8ee0ecd273dcc19e0180e0
 map.playerSpaces = [
     [3, 0],
     [4, 0],
