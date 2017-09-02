@@ -8,8 +8,9 @@ class FehMapHero {
         this.playerKey = null;
         this.row = 0;
         this.column = 0;
-        this.maxSteps = 3;
+        this.maxSteps = 2;
         this.attackRange = 1;
+        this.assistRange = 1;
         this.movementType = MOVEMENT_INFANTRY;
     }
 }

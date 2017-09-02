@@ -9,10 +9,12 @@ const PHASE_ENEMY = 'Enemy Phase';
  * 
  * @param {any[]} array 
  * @param {any} element 
+ * @returns {any}
  */
 function removeFromArray(array, element) {
     const index = array.indexOf(element);
     array.splice(index, 1);
+    return element;
 }
 
 function isNullOrUndefined(value) {
@@ -99,6 +101,8 @@ class FehBattle {
 
         this.listeners.forEach(listener => listener.onStart());
         this.listeners.forEach(listener => listener.onPhase(PHASE_SWAP_SPACES, 0));
+
+        this.playerController.fight();
     }
 
     /**
@@ -124,7 +128,7 @@ class FehBattle {
             throw new FehException(EX_WRONG_TIMING, "You can only call fight during the 'Swap Spaces' phase");
         this.phase = PHASE_PLAYER;
         this.turn = 1;
-        this.getTeam(KEY_PLAYER).forEach(hero => hero.canTakeAction = true);
+        this.getTeam(KEY_PLAYER).forEach(hero => hero.isWaiting = false);
         this.listeners.forEach(listener => listener.onPhase(this.phase, this.turn));
     }
 
@@ -141,10 +145,10 @@ class FehBattle {
             throw new FehException(EX_INVALID_PLAYER, "You can only call end turn during your phase");
 
         if (this.phase == PHASE_PLAYER) {
-            this.getTeam(KEY_PLAYER).forEach(hero => hero.canTakeAction = true);
+            this.getTeam(KEY_PLAYER).forEach(hero => hero.isWaiting = false);
             this.phase = PHASE_ENEMY;
         } else if (this.phase == PHASE_ENEMY) {
-            this.getTeam(KEY_ENEMY).forEach(hero => hero.canTakeAction = true);
+            this.getTeam(KEY_ENEMY).forEach(hero => hero.isWaiting = false);
             this.phase = PHASE_PLAYER;
             this.turn++;
         }
@@ -236,7 +240,7 @@ class FehBattle {
      * @param {Number} column 
      * @returns {FehMapHero}
      */
-    getTileContent(row, column) {
+    getHeroAt(row, column) {
         this.validateCoordinates(row, column);
         return this.heroes.find(heroe => heroe.row == row && heroe.column == column);
     }
@@ -244,150 +248,13 @@ class FehBattle {
     /**
      * 
      * @param {FehMapHero} hero 
+     * @returns {FehActionQueryResult}
      */
     getRangeOf(hero) {
-
         this.validateMapHero(hero);
-
-        let searchSpace = [];
-
-        // nodes
-        for (let row = 0; row < 8; row++) {
-            searchSpace[row] = [];
-            for (let column = 0; column < 8; column++) {
-                let node = {
-                    row: row,
-                    column: column,
-                    g: 999,
-                    f: 999,
-                    validRestPosition: true,
-                    content: null,
-                    neighbours: [],
-                    getNeighbourNodes: function (range) {
-                        let nodes = [this];
-                        while (range >= 1) {
-                            nodes.forEach(node => {
-                                node.neighbours.forEach(neighbour => {
-                                    if (nodes.indexOf(neighbour < 0))
-                                        nodes.push(neighbour);
-                                });
-                            })
-                            range--;
-                        }
-                        removeFromArray(nodes, this);
-                        return nodes;
-                    }
-                };
-                searchSpace[row][column] = node;
-            }
-        }
-
-        // neighbours
-        for (let row = 0; row < 8; row++) {
-            for (let column = 0; column < 8; column++) {
-                let neighbours = searchSpace[row][column].neighbours;
-                if (row > 0) neighbours.push(searchSpace[row - 1][column]);
-                if (row < 7) neighbours.push(searchSpace[row + 1][column]);
-                if (column > 0) neighbours.push(searchSpace[row][column - 1]);
-                if (column < 5) neighbours.push(searchSpace[row][column + 1]);
-            }
-        }
-
-
-        let start = searchSpace[hero.row][hero.column];
-        start.g = 0; // The cost of going from start to start is zero.
-
-        /** 
-         * The set of nodes already evaluated */
-        let closedSet = [];
-
-        /** 
-         * The set of currently discovered nodes that are not evaluated yet. 
-         * Initially, only the start node is known. */
-        let openSet = [start];
-
-        let limit = 0;
-
-        while (openSet.length > 0) {
-
-            /**
-             * The node in openSet having the lowest fScore */
-            let current = openSet.sort((a, b) => a.f - b.f)[0];
-
-            removeFromArray(openSet, current);
-            closedSet.push(current);
-
-            let neighbours = current.neighbours;
-
-            neighbours.forEach(neighbour => {
-
-                // TERRAIN CONSTRAINTS
-                let terrain = this.map.tiles[neighbour.row][neighbour.column];
-                if (hero.movementType != MOVEMENT_FLYER) {
-                    if (terrain != TERRAIN_PLAIN)
-                        return;
-                }
-
-                // If neighbor in closedSet
-                if (closedSet.indexOf(neighbour) >= 0) {
-                    // Ignore the neighbor which is already evaluated
-                    return;
-                }
-
-                // If neighbor not in closedSet
-                if (closedSet.indexOf(neighbour) < 0) {
-                    // Discover a new node
-                    openSet.push(neighbour);
-                }
-
-                // All neighbours are at 1 "step" of distance
-                let distanceBetweenCurrentNeighbour = 1;
-
-                /** The distance from start to a neighbor */
-                let tentativeGScore = current.g + distanceBetweenCurrentNeighbour;
-
-                let currentGScore = neighbour.g;
-                if (tentativeGScore >= currentGScore) {
-                    // This is not a better path.
-                    return;
-                }
-
-                // No heuristics please
-                let heuristicCostFromNeighbourToGoal = 0;
-
-                neighbour.cameFrom = current;
-                neighbour.g = tentativeGScore;
-                neighbour.f = neighbour.g + heuristicCostFromNeighbourToGoal;
-
-            });
-
-        }
-
-        // REST POSITIONS
-        this.heroes.forEach(hero => {
-            let node = searchSpace[hero.row][hero.column];
-            node.validRestPosition = false;
-            node.content = this.getTileContent(node.row, node.column);
-        });
-
-        let range = {
-            moveRange: [],
-            attackRange: []
-        }
-
-        searchSpace.forEach(row => row.forEach(node => {
-            if (node.g <= hero.maxSteps)
-                range.moveRange.push(node);
-        }));
-
-        range.moveRange.forEach(node => {
-            let attackRange = node.getNeighbourNodes(hero.attackRange);
-            attackRange.forEach(a => {
-                range.attackRange.push(a);
-            })
-        });
-
-        return range;
+        let query = new FehActionQuery();
+        let result = query.query(this, hero);
+        return result;
     }
 
     /**
@@ -427,6 +294,16 @@ class FehBattle {
         this.validatePlayerKey(playerKey);
         if (playerKey == KEY_PLAYER) return this.phase == PHASE_PLAYER || this.phase == PHASE_SWAP_SPACES;
         if (playerKey == KEY_ENEMY) return this.phase == PHASE_ENEMY;
+    }
+
+    /**
+     * 
+     * @param {FehMapHero} hero 
+     * @param {FehMapHero} target
+     * @returns {Boolean}
+     */
+    areEnemies(hero, target) {
+        return hero.playerKey != target.playerKey;
     }
 
     /**

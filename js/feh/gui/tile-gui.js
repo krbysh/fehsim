@@ -1,3 +1,23 @@
+const ARROW_ORIGIN_ONLY = 'arrow-root';
+
+const ARROW_ORIGIN_TO_TOP = 'arrow-root-to-top';
+const ARROW_ORIGIN_TO_RIGHT = 'arrow-root-to-right';
+const ARROW_ORIGIN_TO_BOTTOM = 'arrow-root-to-bottom';
+const ARROW_ORIGIN_TO_LEFT = 'arrow-root-to-left';
+
+const ARROW_HORIZONTAL = 'arrow-horizontal';
+const ARROW_VERTICAL = 'arrow-vertical';
+
+const ARROW_TOP_TO_END = 'arrow-top-to-end';
+const ARROW_RIGHT_TO_END = 'arrow-right-to-end';
+const ARROW_BOTTOM_TO_END = 'arrow-bottom-to-end';
+const ARROW_LEFT_TO_END = 'arrow-left-to-end';
+
+const ARROW_HORIZONTAL_TO_BOTTOM = 'arrow-horizontal-to-bottom';
+const ARROW_VERTICAL_TO_LEFT = 'arrow-vertical-to-left';
+const ARROW_HORIZONTAL_TO_TOP = 'arrow-horizontal-to-top';
+const ARROW_VERTICAL_TO_RIGHT = 'arrow-vertical-right';
+
 class FehTileGui {
 
     /**
@@ -34,6 +54,23 @@ class FehTileGui {
 
     clear() {
         this.visualElement.className = 'tile';
+    }
+
+    /**
+     * 
+     * @param {FehTileGui} from 
+     * @param {FehTileGui} to
+     */
+    setArrow(from, to) {
+
+        // this.clearArrow(); //TODO
+        if (from == null && to == null) arrow = ARROW_ORIGIN_ONLY;
+
+        let m = null;
+        m.estabas_poniendole_la_clase_a_los_tiles_para_que_aparezcan_las_flechas(); 
+
+        // MIRA HASTA ARRIBA DEL DOCUMENTO
+
     }
 
     setActionable() {
