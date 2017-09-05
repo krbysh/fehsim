@@ -10,4 +10,13 @@ class FehBattleListener {
      */
     onPhase(phase, turn) {
     }
+
+    /**
+     * 
+     * @param {FehMapHero} hero 
+     * @param {Number} row 
+     * @param {Number} column 
+     */
+    onMove(hero, row, column) {
+    }
 }

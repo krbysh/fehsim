@@ -10,16 +10,19 @@ function addAllElementsNotInTargetArray(targetArray, sourceArray) {
     })
 }
 
-class FehActionQueryNode {
+/**
+ * 
+ */
+class FehMovementQueryNode {
 
     /**
      * 
      * @param {number} row 
      * @param {number} column 
-     * @param {FehActionQueryNode[]} neighbours
+     * @param {FehMovementQueryNode[]} neighbours
      * @param {number} g
      * @param {number} f
-     * @param {FehActionQueryNode} from
+     * @param {FehMovementQueryNode} from
      */
     constructor(row = 0, column = 0, neighbours = [], g = 0, f = 0, from = null) {
         this.row = row;
@@ -32,7 +35,7 @@ class FehActionQueryNode {
 
     /**
      * 
-     * @param {FehActionQueryNode} node 
+     * @param {FehMovementQueryNode} node 
      */
     link(node) {
         if (this.neighbours.indexOf(node) < 0)
@@ -44,7 +47,7 @@ class FehActionQueryNode {
     /**
      * 
      * @param {number} range 
-     * @param {FehActionQueryNode[]} result
+     * @param {FehMovementQueryNode[]} result
      */
     getNeighbours(range, result = []) {
         if (range > 0)
@@ -61,17 +64,20 @@ class FehActionQueryNode {
     }
 }
 
-class FehActionQueryResult {
+/**
+ * 
+ */
+class FehMovementQueryResult {
 
     /**
      * 
-     * @param {FehActionQueryNode[]} traversableTiles 
-     * @param {FehActionQueryNode[]} validMovementTiles 
-     * @param {FehActionQueryNode[]} tilesInAttackRange 
-     * @param {FehActionQueryNode[]} tilesInAssistRange
-     * @param {FehActionQueryNode[]} validAttackTargetTiles
-     * @param {FehActionQueryNode[]} validAssistTargetTiles
-     * @param {FehActionQueryNode[]} nodes
+     * @param {FehMovementQueryNode[]} traversableTiles 
+     * @param {FehMovementQueryNode[]} validMovementTiles 
+     * @param {FehMovementQueryNode[]} tilesInAttackRange 
+     * @param {FehMovementQueryNode[]} tilesInAssistRange
+     * @param {FehMovementQueryNode[]} validAttackTargetTiles
+     * @param {FehMovementQueryNode[]} validAssistTargetTiles
+     * @param {FehMovementQueryNode[]} nodes
      */
     constructor(traversableTiles, validMovementTiles, tilesInAttackRange, tilesInAssistRange, validAttackTargetTiles, validAssistTargetTiles, nodes = []) {
         this.traversableTiles = traversableTiles;
@@ -99,18 +105,21 @@ class FehActionQueryResult {
     }
 }
 
+/**
+ * 
+ */
 class FehActionQuery {
 
 
     /**
-     * @returns {FehActionQueryNode[][]}
+     * @returns {FehMovementQueryNode[][]}
      */
     buildSearchSpace() {
         let searchSpace = [];
         for (let row = 0; row < 8; row++) {
             searchSpace[row] = [];
             for (let column = 0; column < 6; column++) {
-                let node = new FehActionQueryNode();
+                let node = new FehMovementQueryNode();
                 node.row = row;
                 node.column = column;
                 if (column > 0) node.link(searchSpace[row][column - 1]);
@@ -124,9 +133,10 @@ class FehActionQuery {
     /**
      * @param {FehBattle} battle
      * @param {FehMapHero} hero 
-     * @returns {FehActionQueryResult}
+     * @param {Boolean} allyTilesAreValidMovementSpaces
+     * @returns {FehMovementQueryResult}
      */
-    query(battle, hero) {
+    movementQuery(battle, hero, allyTilesAreValidMovementSpaces = false) {
 
         let searchSpace = this.buildSearchSpace();
         let start = searchSpace[hero.row][hero.column];
@@ -150,11 +160,31 @@ class FehActionQuery {
 
             current.neighbours.forEach(n => {
 
-                // ignore untraversable neighbours
+                // ignore untraversable neighbours (because of terrain)
                 let terrain = battle.map.tiles[n.row][n.column];
-                if (hero.movementType != MOVEMENT_FLYER)
-                    if (terrain != TERRAIN_PLAIN)
+                switch (hero.movementType) {
+
+                    case MOVEMENT_ARMOR:
+                    case MOVEMENT_INFANTRY:
+                        if (current !== start && terrain == TERRAIN_TREES) return;
+                        if (terrain !== TERRAIN_PLAIN) return;
+                        break;
+
+                    case MOVEMENT_CAVALRY:
+                        if (terrain !== TERRAIN_PLAIN) return;
+                        break;
+
+                    case MOVEMENT_FLYER:
+                        if (terrain == TERRAIN_BLOCK) return;
+                        break;
+                }
+
+                // ignore untraversable neighbours (because of enemy presence)
+                let heroAtTile = battle.getHeroAt(n.row, n.column)
+                if (heroAtTile) {
+                    if (heroAtTile.playerKey != hero.playerKey)
                         return;
+                }
 
                 // ignore already evaluated neighbours
                 if (closedSet.indexOf(n) >= 0)
@@ -173,7 +203,7 @@ class FehActionQuery {
                     return;
 
                 // update path
-                let h = 0;
+                let h = heroAtTile ? 1 : 0; // to prefer the clear path
                 n.from = current;
                 n.g = g;
                 n.f = n.g + h;
@@ -188,6 +218,7 @@ class FehActionQuery {
         let validMovementTiles = traversableTiles.filter(n => {
             let at = battle.getHeroAt(n.row, n.column);
             if (at == hero) return true;
+            if ((allyTilesAreValidMovementSpaces === true) && (at && at.playerKey == hero.playerKey)) return true;
             return !at;
         });
         let tilesInAttackRange = validMovementTiles.map(n => n.getNeighbours(hero.attackRange)).reduce((a, b) => a.concat(b));
@@ -203,6 +234,6 @@ class FehActionQuery {
             return target && !battle.areEnemies(hero, target);
         });
 
-        return new FehActionQueryResult(traversableTiles, validMovementTiles, tilesInAttackRange, tilesInAssistRange, validAttackTargetTiles, validAssistTargetTiles);
+        return new FehMovementQueryResult(traversableTiles, validMovementTiles, tilesInAttackRange, tilesInAssistRange, validAttackTargetTiles, validAssistTargetTiles);
     }
 }

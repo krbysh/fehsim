@@ -1,4 +1,6 @@
 const MOVEMENT_FLYER = 'MOVEMENT_FLYER';
+const MOVEMENT_ARMOR = 'MOVEMENT_ARMOR';
+const MOVEMENT_CAVALRY = 'MOVEMENT_CAVALRY';
 const MOVEMENT_INFANTRY = 'MOVEMENT_INFANTRY';
 
 class FehMapHero {
@@ -12,5 +14,6 @@ class FehMapHero {
         this.attackRange = 1;
         this.assistRange = 1;
         this.movementType = MOVEMENT_INFANTRY;
+        this.teamIndex = 1;
     }
 }

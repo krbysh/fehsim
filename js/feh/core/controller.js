@@ -45,7 +45,7 @@ class FehController {
      * 
      * @param {FehMapHero} hero 
      * @param {FehMapHero} target 
-     * @returns {[]} 
+     * @returns {any[]} 
      */
     getValidActionPosition(hero, target) {
         return this.battle.getValidActionPosition(hero, target);

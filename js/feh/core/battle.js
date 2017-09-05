@@ -34,8 +34,9 @@ class FehBattle {
      * @param {FehMap} map 
      * @param {FehBuild[]} teamBuild1 
      * @param {FehBuild[]} teamBuild2
+     * @param {FehBattleListener[]} listeners
      */
-    constructor(map, teamBuild1, teamBuild2) {
+    constructor(map, teamBuild1, teamBuild2, listeners = []) {
 
         this.map = map;
         this.playerController = new FehController(this, KEY_PLAYER);
@@ -47,7 +48,7 @@ class FehBattle {
         this.phase = PHASE_SWAP_SPACES;
         this.turn = 0;
         this.canSwapSpaces = false;
-        this.listeners = [];
+        this.listeners = listeners;
 
     }
 
@@ -99,9 +100,11 @@ class FehBattle {
         this.getTeam(KEY_PLAYER).forEach(hero => hero.playerKey = KEY_PLAYER);
         this.getTeam(KEY_ENEMY).forEach(hero => hero.playerKey = KEY_ENEMY);
 
+        this.playerTeam.forEach(hero => hero.teamIndex = 0);
+        this.enemyTeam.forEach(hero => hero.teamIndex = 1);
+
         this.listeners.forEach(listener => listener.onStart());
         this.listeners.forEach(listener => listener.onPhase(PHASE_SWAP_SPACES, 0));
-
         this.playerController.fight();
     }
 
@@ -128,7 +131,7 @@ class FehBattle {
             throw new FehException(EX_WRONG_TIMING, "You can only call fight during the 'Swap Spaces' phase");
         this.phase = PHASE_PLAYER;
         this.turn = 1;
-        this.getTeam(KEY_PLAYER).forEach(hero => hero.isWaiting = false);
+        this.heroes.forEach(hero => hero.isWaiting = false);
         this.listeners.forEach(listener => listener.onPhase(this.phase, this.turn));
     }
 
@@ -169,6 +172,8 @@ class FehBattle {
         this.validatePhasePlayer(playerKey);
         this.validateHeroOwnership(playerKey, hero);
 
+        if (hero.isWaiting) throw new FehException(EX_ILLEGAL_MOVE, "The hero is waiting and can't move for the rest of the player phase");
+
         if (isNullOrUndefined(row) && isNullOrUndefined(column) && isNullOrUndefined(target)) {
 
             // WAIT
@@ -178,7 +183,19 @@ class FehBattle {
 
             // MOVE
             this.validateCoordinates(row, column);
+
+            // Is it a valid move?
+            let query = new FehActionQuery();
+            let result = query.movementQuery(this, hero, false);
+            let node = result.validMovementTiles.find(t => t.row == row && t.column == column);
+            if (!node) throw new FehException(EX_ILLEGAL_MOVE, 'The coordinates do not belong to a valid movement tile');
+
             console.log('MOVE');
+            hero.isWaiting = true;
+            hero.row = row;
+            hero.column = column;
+
+            this.listeners.forEach(listener => listener.onMove(hero, row, column));
 
         } else {
 
@@ -248,12 +265,13 @@ class FehBattle {
     /**
      * 
      * @param {FehMapHero} hero 
-     * @returns {FehActionQueryResult}
+     * @param {Boolean} allyTilesAreValidMovementSpaces
+     * @returns {FehMovementQueryResult}
      */
-    getRangeOf(hero) {
+    getRangeOf(hero, allyTilesAreValidMovementSpaces = false) {
         this.validateMapHero(hero);
         let query = new FehActionQuery();
-        let result = query.query(this, hero);
+        let result = query.movementQuery(this, hero, allyTilesAreValidMovementSpaces);
         return result;
     }
 
@@ -279,7 +297,7 @@ class FehBattle {
      * 
      * @param {FehMapHero} hero 
      * @param {FehMapHero} target 
-     * @returns {[]} 
+     * @returns {any[]} 
      * @throws {FehException}
      */
     getValidActionPosition(hero, target) {

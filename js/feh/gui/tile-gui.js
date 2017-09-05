@@ -1,22 +1,22 @@
-const ARROW_ORIGIN_ONLY = 'arrow-root';
+const ARROW_ORIGIN_ONLY = 'o';
 
-const ARROW_ORIGIN_TO_TOP = 'arrow-root-to-top';
-const ARROW_ORIGIN_TO_RIGHT = 'arrow-root-to-right';
-const ARROW_ORIGIN_TO_BOTTOM = 'arrow-root-to-bottom';
-const ARROW_ORIGIN_TO_LEFT = 'arrow-root-to-left';
+const ARROW_ORIGIN_TO_TOP = 'o2t';
+const ARROW_ORIGIN_TO_RIGHT = 'o2r';
+const ARROW_ORIGIN_TO_BOTTOM = 'o2b';
+const ARROW_ORIGIN_TO_LEFT = 'o2l';
 
-const ARROW_HORIZONTAL = 'arrow-horizontal';
-const ARROW_VERTICAL = 'arrow-vertical';
+const ARROW_HORIZONTAL = 'h';
+const ARROW_VERTICAL = 'v';
 
-const ARROW_TOP_TO_END = 'arrow-top-to-end';
-const ARROW_RIGHT_TO_END = 'arrow-right-to-end';
-const ARROW_BOTTOM_TO_END = 'arrow-bottom-to-end';
-const ARROW_LEFT_TO_END = 'arrow-left-to-end';
+const ARROW_TOP_TO_END = 'e2t';
+const ARROW_RIGHT_TO_END = 'e2r';
+const ARROW_BOTTOM_TO_END = 'e2b';
+const ARROW_LEFT_TO_END = 'e2l';
 
-const ARROW_HORIZONTAL_TO_BOTTOM = 'arrow-horizontal-to-bottom';
-const ARROW_VERTICAL_TO_LEFT = 'arrow-vertical-to-left';
-const ARROW_HORIZONTAL_TO_TOP = 'arrow-horizontal-to-top';
-const ARROW_VERTICAL_TO_RIGHT = 'arrow-vertical-right';
+const ARROW_LEFT_TO_BOTTOM = 'l2b';
+const ARROW_TOP_TO_LEFT = 't2l';
+const ARROW_RIGHT_TO_TOP = 'r2t';
+const ARROW_BOTTOM_TO_RIGHT = 'b2r';
 
 class FehTileGui {
 
@@ -44,8 +44,12 @@ class FehTileGui {
         let frame = document.createElement('div')
         frame.className = 'tile-frame';
 
+        let arrow = document.createElement('div')
+        arrow.className = 'tile-arrow';
+
         this.visualElement.appendChild(background);
         this.visualElement.appendChild(frame);
+        this.visualElement.appendChild(arrow);
 
         this.clear();
     }
@@ -56,6 +60,32 @@ class FehTileGui {
         this.visualElement.className = 'tile';
     }
 
+    clearArrow() {
+
+        this.visualElement.classList.remove('arrow');
+
+        this.visualElement.classList.remove(ARROW_ORIGIN_ONLY);
+
+        this.visualElement.classList.remove(ARROW_ORIGIN_TO_TOP);
+        this.visualElement.classList.remove(ARROW_ORIGIN_TO_RIGHT);
+        this.visualElement.classList.remove(ARROW_ORIGIN_TO_BOTTOM);
+        this.visualElement.classList.remove(ARROW_ORIGIN_TO_LEFT);
+
+        this.visualElement.classList.remove(ARROW_HORIZONTAL);
+        this.visualElement.classList.remove(ARROW_VERTICAL);
+
+        this.visualElement.classList.remove(ARROW_TOP_TO_END);
+        this.visualElement.classList.remove(ARROW_RIGHT_TO_END);
+        this.visualElement.classList.remove(ARROW_BOTTOM_TO_END);
+        this.visualElement.classList.remove(ARROW_LEFT_TO_END);
+
+        this.visualElement.classList.remove(ARROW_LEFT_TO_BOTTOM);
+        this.visualElement.classList.remove(ARROW_TOP_TO_LEFT);
+        this.visualElement.classList.remove(ARROW_RIGHT_TO_TOP);
+        this.visualElement.classList.remove(ARROW_BOTTOM_TO_RIGHT);
+
+    }
+
     /**
      * 
      * @param {FehTileGui} from 
@@ -63,14 +93,67 @@ class FehTileGui {
      */
     setArrow(from, to) {
 
-        // this.clearArrow(); //TODO
+        let fromTop = false;
+        let fromRight = false;
+        let fromBottom = false;
+        let fromLeft = false;
+
+        let toTop = false;
+        let toRight = false;
+        let toBottom = false;
+        let toLeft = false;
+
+        if (from) {
+            if (from.row < this.row) fromTop = true;
+            if (from.column > this.column) fromRight = true;
+            if (from.column < this.column) fromLeft = true;
+            if (from.row > this.row) fromBottom = true;
+        }
+
+        if (to) {
+            if (to.row < this.row) toTop = true;
+            if (to.column < this.column) toLeft = true;
+            if (to.column > this.column) toRight = true;
+            if (to.row > this.row) toBottom = true;
+        }
+
+        this.clearArrow();
+
+        let arrow = 'something-went-wrong';
+
         if (from == null && to == null) arrow = ARROW_ORIGIN_ONLY;
 
-        let m = null;
-        m.estabas_poniendole_la_clase_a_los_tiles_para_que_aparezcan_las_flechas(); 
+        // ORIGIN_TO_ ...
+        if (from == null) {
+            if (toTop) arrow = ARROW_ORIGIN_TO_TOP;
+            if (toRight) arrow = ARROW_ORIGIN_TO_RIGHT;
+            if (toBottom) arrow = ARROW_ORIGIN_TO_BOTTOM;
+            if (toLeft) arrow = ARROW_ORIGIN_TO_LEFT;
+        }
 
-        // MIRA HASTA ARRIBA DEL DOCUMENTO
+        // ... _TO_END
+        if (to == null) {
+            if (fromTop) arrow = ARROW_TOP_TO_END;
+            if (fromRight) arrow = ARROW_RIGHT_TO_END;
+            if (fromBottom) arrow = ARROW_BOTTOM_TO_END;
+            if (fromLeft) arrow = ARROW_LEFT_TO_END;
+        }
 
+        // ETC
+        if (from && to) {
+            
+            if ((fromLeft && toRight) || (fromRight && toLeft)) arrow = ARROW_HORIZONTAL;
+            if ((fromBottom && toTop) || (fromTop && toBottom)) arrow = ARROW_VERTICAL;
+            
+            if (fromLeft && toBottom || fromBottom && toLeft) arrow = ARROW_LEFT_TO_BOTTOM;
+            if (fromLeft && toTop || fromTop && toLeft) arrow = ARROW_TOP_TO_LEFT;
+
+            if (fromRight && toBottom || fromBottom && toRight) arrow = ARROW_BOTTOM_TO_RIGHT;
+            if (fromRight && toTop || fromTop && toRight) arrow = ARROW_RIGHT_TO_TOP;
+        }
+
+        this.visualElement.classList.add('arrow');
+        this.visualElement.classList.add(arrow);
     }
 
     setActionable() {
