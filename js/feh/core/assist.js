@@ -1,2 +1,0 @@
-class FehAssist extends FehSkill {    
-}

@@ -11,6 +11,9 @@
 .map-tiles {z-index:8;}
 
 .tile-input, 
+.tile-danger, 
+.tile-wall, 
+.tile-arrow, 
 .tile,
 .tile-background,
 .tile-frame {
@@ -20,7 +23,11 @@
     position:relative;
 }
 
-.tile-frame, .tile-background {
+.tile-danger, 
+.tile-wall, 
+.tile-arrow, 
+.tile-frame, 
+.tile-background {
     position:absolute;
 }
 
@@ -33,15 +40,42 @@
     33%,66% {opacity:1}
 }
 
+@keyframes tile-action-animation {
+    0%,100% {background:inherit}
+    50% {background-color:white}
+}
+
 .tile-frame {
     background: none;
+}
+
+.red-frame .tile-frame,
+.green-frame .tile-frame,
+.blue-frame .tile-frame {
     background-position: calc(var(--tile-size) * -1) 0px;
     background-size: auto calc(240 / 182 * var(--tile-size));
+    background-image: url('/res/img/gui/Status.png');
+    animation: 2s tile-background-animation infinite linear;
 }
 
 .blue-frame .tile-frame {
-    animation: 2s tile-background-animation infinite linear;
-    background-image: url('../img/gui/Status.png');
+    background-position: calc(var(--tile-size) * -1) 0px;
+}
+
+.green-frame .tile-frame {
+    background-position: calc(var(--tile-size) * -3) 0px;
+}
+
+.action.blue-frame .tile-frame {
+    animation:none;
+}
+
+.action.green-frame .tile-frame {
+    animation:none;
+}
+
+.action.blue-frame .tile-background {
+    animation: 1s tile-action-animation infinite linear; 
 }
 
 .blue-background .tile-background {
@@ -50,7 +84,7 @@
 }
 
 .green-background .tile-background {
-    background-color:hsla(120, 100%, 50%, 0.2);
+    background-color:hsla(120, 100%, 50%, 0.5);
     box-shadow: inset 0 0 calc(var(--tile-size) * 0.25) hsla(120, 100%, 50%, 1);
 }
 
@@ -60,11 +94,53 @@
 }
 
 .action.blue-background .tile-background {
-    background-color:hsla(215, 100%, 50%, 0.650);
-    box-shadow: inset 0 0 calc(var(--tile-size) * 0.25) hsla(225, 100%, 50%, 1);
+    background-color:hsla(220, 100%, 50%, 0.7);
+    box-shadow: inset 0 0 calc(var(--tile-size) * 0.25) hsla(230, 100%, 40%, 1);
+}
+
+.action.green-background .tile-background {
+    background-color:hsla(120, 100%, 50%, 0.5);
+    box-shadow: inset 0 0 calc(var(--tile-size) * 0.25) hsla(120, 100%, 50%, 1);
 }
 
 .action.red-background .tile-background {
     background-color:hsla(0, 100%, 50%, 0.7);
     box-shadow: inset 0 0 calc(var(--tile-size) * 0.25) hsla(0, 100%, 50%, 1);
+}
+
+/* ARROWS */
+
+.arrow .tile-arrow {
+    background:none;
+    background-image: url('../img/gui/movement-preview-arrows.png') !important;
+    background-size: auto calc(360 / 90 * var(--tile-size));
+}
+
+.arrow.o   .tile-arrow { background-position: calc(var(--tile-size) * -2) calc(var(--tile-size) * -3); }
+
+.arrow.o2t .tile-arrow { background-position: calc(var(--tile-size) * -0) calc(var(--tile-size) * -0); }
+.arrow.o2r .tile-arrow { background-position: calc(var(--tile-size) * -1) calc(var(--tile-size) * -0); }
+.arrow.o2b .tile-arrow { background-position: calc(var(--tile-size) * -2) calc(var(--tile-size) * -0); }
+.arrow.o2l .tile-arrow { background-position: calc(var(--tile-size) * -3) calc(var(--tile-size) * -0); }
+
+.arrow.e2t .tile-arrow { background-position: calc(var(--tile-size) * -0) calc(var(--tile-size) * -1); } 
+.arrow.e2r .tile-arrow { background-position: calc(var(--tile-size) * -1) calc(var(--tile-size) * -1); } 
+.arrow.e2b .tile-arrow { background-position: calc(var(--tile-size) * -2) calc(var(--tile-size) * -1); } 
+.arrow.e2l .tile-arrow { background-position: calc(var(--tile-size) * -3) calc(var(--tile-size) * -1); } 
+
+.arrow.h   .tile-arrow { background-position: calc(var(--tile-size) * -3) calc(var(--tile-size) * -2); } 
+.arrow.v   .tile-arrow { background-position: calc(var(--tile-size) * -2) calc(var(--tile-size) * -2); } 
+
+.arrow.t2l .tile-arrow { background-position: calc(var(--tile-size) * -1) calc(var(--tile-size) * -3); } 
+.arrow.r2t .tile-arrow { background-position: calc(var(--tile-size) * -0) calc(var(--tile-size) * -3); } 
+.arrow.b2r .tile-arrow { background-position: calc(var(--tile-size) * -0) calc(var(--tile-size) * -2); } 
+.arrow.l2b .tile-arrow { background-position: calc(var(--tile-size) * -1) calc(var(--tile-size) * -2); } 
+
+.wall-eu .tile-wall {
+    background:#9E9E9E;
+}
+
+.danger .tile-danger {
+    background:rgba(255, 0, 0, 0.2);
+    position:absolute;
 }

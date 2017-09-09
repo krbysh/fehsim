@@ -1,3 +1,8 @@
+/**
+ * BLA3
+ * @module Battle
+ * */
+
 const KEY_PLAYER = "Player";
 const KEY_ENEMY = "Enemy";
 
@@ -7,44 +12,153 @@ const PHASE_ENEMY = 'Enemy Phase';
 
 /**
  * 
- * @param {any[]} array 
- * @param {any} element 
  */
-function removeFromArray(array, element) {
-    const index = array.indexOf(element);
-    array.splice(index, 1);
-}
+class FehBattleListener {
 
-function isNullOrUndefined(value) {
-    if (value === null) return true;
-    if (value === undefined) return true;
-    return false;
-}
-
-function isNumber(n) {
-    return !isNaN(parseFloat(n)) && isFinite(n);
-}
-
-class FehBattle {
+    onStart() {
+    }
 
     /**
      * 
-     * @param {FehMap} map 
-     * @param {FehBuild[]} teamBuild1 
-     * @param {FehBuild[]} teamBuild2
+     * @param {String} phase 
+     * @param {Number} turn 
      */
-    constructor(map, teamBuild1, teamBuild2) {
+    onPhase(phase, turn) {
+    }
 
-        this.map = map;
+    /**
+     * 
+     * @param {FehUnit} hero 
+     * @param {Number} row 
+     * @param {Number} column 
+     */
+    onMove(hero, row, column) {
+    }
+
+    /**
+     * 
+     * @param {FehUnit} hero1 
+     * @param {FehUnit} hero2 
+     */
+    onSwap(hero1, hero2) {
+    }
+}
+
+/**
+ * 
+ */
+class FehController {
+
+    /**
+     * 
+     * @param {FehBattle} battle 
+     * @param {string} playerKey 
+     */
+    constructor(battle, playerKey) {
+        this.battle = battle;
+        this.playerKey = playerKey;
+    }
+
+    fight() {
+        this.battle.fight(this.playerKey);
+    }
+
+    swapSpaces() {
+        this.battle.swapSpaces(this.playerKey);
+    }
+
+    endTurn() {
+        this.battle.endTurn(this.playerKey);
+    }
+
+    getTeam() {
+        return this.battle.getTeam(this.playerKey);
+    }
+
+    getEnemyTeam() {
+        return this.battle.getEnemyTeam(this.playerKey);
+    }
+
+    getAvailableHeroes() {
+        return this.battle.getAvailableHeroes(this.playerKey);
+    }
+
+    getAvailableActions() {
+    }
+
+    isPlayerPhase() {
+        return this.battle.isPlayerPhase(this.playerKey);
+    }
+
+    /**
+     * 
+     * @param {FehUnit} hero 
+     * @param {FehUnit} target 
+     * @returns {any[]} 
+     */
+    getValidActionPosition(hero, target) {
+        return this.battle.getValidActionPosition(hero, target);
+    }
+
+    /**
+     * 
+     * @param {FehUnit} hero 
+     * @param {nunmber} row 
+     * @param {nunmber} column 
+     * @param {FehUnit} target 
+     */
+    doAction(hero, row, column, target) {
+        this.battle.doAction(this.playerKey, hero, row, column, target);
+    }
+
+    /**
+     * 
+     * @param {FehUnit} hero 
+     */
+    owns(hero) {
+        return this.battle.belongsToPlayer(hero, this.playerKey)
+    }
+
+    /**
+     * 
+     * @param {FehUnit} hero 
+     */
+    isEnemy(hero) {
+        return this.battle.belongsToEnemy(hero, this.playerKey)
+    }
+}
+
+/**
+ * 
+ */
+class FehBattle {
+
+    constructor() {
+
+        /**
+         * @type {FehMap}
+         */
+        this.map = null;
         this.playerController = new FehController(this, KEY_PLAYER);
         this.enemyController = new FehController(this, KEY_ENEMY);
-        this.teamBuild1 = teamBuild1;
-        this.teamBuild2 = teamBuild2;
-        this.playerTeam = null;
-        this.enemyTeam = null;
+
+        /**
+         * @type {FehUnit[]}
+         */
+        this.playerTeam = [];
+
+        /**
+         * @type {FehUnit[]}
+         */
+        this.enemyTeam = [];
+
         this.phase = PHASE_SWAP_SPACES;
         this.turn = 0;
         this.canSwapSpaces = false;
+
+        /**
+         * @type {FehBattleListener[]}
+         */
         this.listeners = [];
 
     }
@@ -64,18 +178,9 @@ class FehBattle {
         this.phase = PHASE_SWAP_SPACES;
         this.turn = 0;
 
-        let buildTeamFromBuild = teamBuild => {
-            let team = [];
-            for (let i = 0; i < teamBuild.length; i++) {
-                let build = teamBuild[i];
-                let hero = build.createInstance();
-                team.push(hero);
-            }
-            return team;
-        };
+        // this.playerTeam = buildTeamFromBuild(this.teamBuild1);
+        // this.enemyTeam = buildTeamFromBuild(this.teamBuild2);
 
-        this.playerTeam = buildTeamFromBuild(this.teamBuild1);
-        this.enemyTeam = buildTeamFromBuild(this.teamBuild2);
         this.heroes = []
         this.playerTeam.forEach(heroe => this.heroes.push(heroe));
         this.enemyTeam.forEach(heroe => this.heroes.push(heroe));
@@ -97,8 +202,12 @@ class FehBattle {
         this.getTeam(KEY_PLAYER).forEach(hero => hero.playerKey = KEY_PLAYER);
         this.getTeam(KEY_ENEMY).forEach(hero => hero.playerKey = KEY_ENEMY);
 
+        this.playerTeam.forEach(hero => hero.teamIndex = 0);
+        this.enemyTeam.forEach(hero => hero.teamIndex = 1);
+
         this.listeners.forEach(listener => listener.onStart());
         this.listeners.forEach(listener => listener.onPhase(PHASE_SWAP_SPACES, 0));
+        this.playerController.fight();
     }
 
     /**
@@ -124,7 +233,7 @@ class FehBattle {
             throw new FehException(EX_WRONG_TIMING, "You can only call fight during the 'Swap Spaces' phase");
         this.phase = PHASE_PLAYER;
         this.turn = 1;
-        this.getTeam(KEY_PLAYER).forEach(hero => hero.canTakeAction = true);
+        this.heroes.forEach(hero => hero.isWaiting = false);
         this.listeners.forEach(listener => listener.onPhase(this.phase, this.turn));
     }
 
@@ -135,16 +244,17 @@ class FehBattle {
      */
     endTurn(playerKey) {
 
+
         this.validatePlayerKey(playerKey);
 
         if (!(playerKey === KEY_PLAYER && this.phase === PHASE_PLAYER || playerKey === KEY_ENEMY && this.phase === PHASE_ENEMY))
             throw new FehException(EX_INVALID_PLAYER, "You can only call end turn during your phase");
 
         if (this.phase == PHASE_PLAYER) {
-            this.getTeam(KEY_PLAYER).forEach(hero => hero.canTakeAction = true);
+            this.getTeam(KEY_PLAYER).forEach(hero => hero.isWaiting = false);
             this.phase = PHASE_ENEMY;
         } else if (this.phase == PHASE_ENEMY) {
-            this.getTeam(KEY_ENEMY).forEach(hero => hero.canTakeAction = true);
+            this.getTeam(KEY_ENEMY).forEach(hero => hero.isWaiting = false);
             this.phase = PHASE_PLAYER;
             this.turn++;
         }
@@ -155,15 +265,29 @@ class FehBattle {
     /**
      * 
      * @param {String} playerKey 
-     * @param {FehMapHero} hero 
+     * @param {FehUnit} hero 
      * @param {Number} row 
      * @param {Number} column 
-     * @param {FehMapHero} target 
+     * @param {FehUnit} target 
      */
     doAction(playerKey, hero, row, column, target) {
 
         this.validatePhasePlayer(playerKey);
         this.validateHeroOwnership(playerKey, hero);
+
+        if (hero.isWaiting) throw new FehException(EX_ILLEGAL_MOVE, "The hero is waiting and can't move for the rest of the player phase");
+
+        if (this.phase == PHASE_SWAP_SPACES) {
+            this.validateHeroOwnership(playerKey, target);
+            let row0 = hero.row;
+            let col0 = hero.column;
+            hero.row = target.row;
+            hero.column = target.column;
+            target.row = row0;
+            target.column = col0;
+            this.listeners.forEach(listener => listener.onSwap(hero, target));
+            return;
+        }
 
         if (isNullOrUndefined(row) && isNullOrUndefined(column) && isNullOrUndefined(target)) {
 
@@ -174,7 +298,19 @@ class FehBattle {
 
             // MOVE
             this.validateCoordinates(row, column);
+
+            // Is it a valid move?
+            let query = new FehActionQuery();
+            let result = query.movementQuery(this, hero, false);
+            let node = result.validMovementTiles.find(t => t.row == row && t.column == column);
+            if (!node) throw new FehException(EX_ILLEGAL_MOVE, 'The coordinates do not belong to a valid movement tile');
+
             console.log('MOVE');
+            hero.isWaiting = true;
+            hero.row = row;
+            hero.column = column;
+
+            this.listeners.forEach(listener => listener.onMove(hero, row, column));
 
         } else {
 
@@ -207,7 +343,7 @@ class FehBattle {
     /**
      * 
      * @param {String} playerKey 
-     * @returns {FehMapHero[]}
+     * @returns {FehUnit[]}
      */
     getTeam(playerKey) {
 
@@ -220,7 +356,7 @@ class FehBattle {
     /**
      * 
      * @param {String} playerKey
-     * @returns {FehMapHero[]} 
+     * @returns {FehUnit[]} 
      */
     getEnemyTeam(playerKey) {
 
@@ -234,166 +370,30 @@ class FehBattle {
      * 
      * @param {Number} row 
      * @param {Number} column 
-     * @returns {FehMapHero}
+     * @returns {FehUnit}
      */
-    getTileContent(row, column) {
+    getHeroAt(row, column) {
         this.validateCoordinates(row, column);
         return this.heroes.find(heroe => heroe.row == row && heroe.column == column);
     }
 
     /**
      * 
-     * @param {FehMapHero} hero 
+     * @param {FehUnit} hero 
+     * @param {Boolean} allyTilesAreValidMovementSpaces
+     * @returns {FehMovementQueryResult}
      */
-    getRangeOf(hero) {
-
+    getRangeOf(hero, allyTilesAreValidMovementSpaces = false) {
         this.validateMapHero(hero);
-
-        let searchSpace = [];
-
-        // nodes
-        for (let row = 0; row < 8; row++) {
-            searchSpace[row] = [];
-            for (let column = 0; column < 8; column++) {
-                let node = {
-                    row: row,
-                    column: column,
-                    g: 999,
-                    f: 999,
-                    validRestPosition: true,
-                    content: null,
-                    neighbours: [],
-                    getNeighbourNodes: function (range) {
-                        let nodes = [this];
-                        while (range >= 1) {
-                            nodes.forEach(node => {
-                                node.neighbours.forEach(neighbour => {
-                                    if (nodes.indexOf(neighbour < 0))
-                                        nodes.push(neighbour);
-                                });
-                            })
-                            range--;
-                        }
-                        removeFromArray(nodes, this);
-                        return nodes;
-                    }
-                };
-                searchSpace[row][column] = node;
-            }
-        }
-
-        // neighbours
-        for (let row = 0; row < 8; row++) {
-            for (let column = 0; column < 8; column++) {
-                let neighbours = searchSpace[row][column].neighbours;
-                if (row > 0) neighbours.push(searchSpace[row - 1][column]);
-                if (row < 7) neighbours.push(searchSpace[row + 1][column]);
-                if (column > 0) neighbours.push(searchSpace[row][column - 1]);
-                if (column < 5) neighbours.push(searchSpace[row][column + 1]);
-            }
-        }
-
-
-        let start = searchSpace[hero.row][hero.column];
-        start.g = 0; // The cost of going from start to start is zero.
-
-        /** 
-         * The set of nodes already evaluated */
-        let closedSet = [];
-
-        /** 
-         * The set of currently discovered nodes that are not evaluated yet. 
-         * Initially, only the start node is known. */
-        let openSet = [start];
-
-        let limit = 0;
-
-        while (openSet.length > 0) {
-
-            /**
-             * The node in openSet having the lowest fScore */
-            let current = openSet.sort((a, b) => a.f - b.f)[0];
-
-            removeFromArray(openSet, current);
-            closedSet.push(current);
-
-            let neighbours = current.neighbours;
-
-            neighbours.forEach(neighbour => {
-
-                // TERRAIN CONSTRAINTS
-                let terrain = this.map.tiles[neighbour.row][neighbour.column];
-                if (hero.movementType != MOVEMENT_FLYER) {
-                    if (terrain != TERRAIN_PLAIN)
-                        return;
-                }
-
-                // If neighbor in closedSet
-                if (closedSet.indexOf(neighbour) >= 0) {
-                    // Ignore the neighbor which is already evaluated
-                    return;
-                }
-
-                // If neighbor not in closedSet
-                if (closedSet.indexOf(neighbour) < 0) {
-                    // Discover a new node
-                    openSet.push(neighbour);
-                }
-
-                // All neighbours are at 1 "step" of distance
-                let distanceBetweenCurrentNeighbour = 1;
-
-                /** The distance from start to a neighbor */
-                let tentativeGScore = current.g + distanceBetweenCurrentNeighbour;
-
-                let currentGScore = neighbour.g;
-                if (tentativeGScore >= currentGScore) {
-                    // This is not a better path.
-                    return;
-                }
-
-                // No heuristics please
-                let heuristicCostFromNeighbourToGoal = 0;
-
-                neighbour.cameFrom = current;
-                neighbour.g = tentativeGScore;
-                neighbour.f = neighbour.g + heuristicCostFromNeighbourToGoal;
-
-            });
-
-        }
-
-        // REST POSITIONS
-        this.heroes.forEach(hero => {
-            let node = searchSpace[hero.row][hero.column];
-            node.validRestPosition = false;
-            node.content = this.getTileContent(node.row, node.column);
-        });
-
-        let range = {
-            moveRange: [],
-            attackRange: []
-        }
-
-        searchSpace.forEach(row => row.forEach(node => {
-            if (node.g <= hero.maxSteps)
-                range.moveRange.push(node);
-        }));
-
-        range.moveRange.forEach(node => {
-            let attackRange = node.getNeighbourNodes(hero.attackRange);
-            attackRange.forEach(a => {
-                range.attackRange.push(a);
-            })
-        });
-
-        return range;
+        let query = new FehActionQuery();
+        let result = query.movementQuery(this, hero, allyTilesAreValidMovementSpaces);
+        return result;
     }
 
     /**
      * 
      * @param {String} playerKey 
-     * @returns {FehMapHero[]}
+     * @returns {FehUnit[]}
      */
     getAvailableHeroes(playerKey) {
 
@@ -410,9 +410,9 @@ class FehBattle {
 
     /**
      * 
-     * @param {FehMapHero} hero 
-     * @param {FehMapHero} target 
-     * @returns {[]} 
+     * @param {FehUnit} hero 
+     * @param {FehUnit} target 
+     * @returns {any[]} 
      * @throws {FehException}
      */
     getValidActionPosition(hero, target) {
@@ -427,6 +427,16 @@ class FehBattle {
         this.validatePlayerKey(playerKey);
         if (playerKey == KEY_PLAYER) return this.phase == PHASE_PLAYER || this.phase == PHASE_SWAP_SPACES;
         if (playerKey == KEY_ENEMY) return this.phase == PHASE_ENEMY;
+    }
+
+    /**
+     * 
+     * @param {FehUnit} hero 
+     * @param {FehUnit} target
+     * @returns {Boolean}
+     */
+    areEnemies(hero, target) {
+        return hero.playerKey != target.playerKey;
     }
 
     /**
@@ -453,11 +463,11 @@ class FehBattle {
 
     /**
      * 
-     * @param {FehMapHero} hero 
+     * @param {FehUnit} hero 
      * @throws {FehException}
      */
     validateMapHero(hero) {
-        if (hero === null || hero === undefined || !(hero instanceof FehMapHero))
+        if (hero === null || hero === undefined || !(hero instanceof FehUnit))
             throw new FehException(EX_INVALID_TYPE, "'" + hero + "' is not a FehMapHero");
         if (this.playerTeam.indexOf(hero) < 0 && this.enemyTeam.indexOf(hero) < 0)
             throw new FehException(EX_WRONG_BATTLE, "'" + hero + "' is not in this battle");
@@ -466,7 +476,7 @@ class FehBattle {
     /**
      * 
      * @param {String} playerKey 
-     * @param {FehMapHero} hero 
+     * @param {FehUnit} hero 
      * @throws {FehException}
      */
     validateHeroOwnership(playerKey, hero) {
@@ -493,7 +503,7 @@ class FehBattle {
 
     /**
      * 
-     * @param {FehMapHero} hero
+     * @param {FehUnit} hero
      * @param {String} playerKey 
      */
     belongsToEnemy(hero, playerKey) {
@@ -503,7 +513,7 @@ class FehBattle {
 
     /**
  * 
- * @param {FehMapHero} hero
+ * @param {FehUnit} hero
  * @param {String} playerKey 
  */
     belongsToPlayer(hero, playerKey) {

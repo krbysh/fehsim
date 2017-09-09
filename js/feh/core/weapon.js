@@ -1,2 +1,0 @@
-class FehWeapon extends FehSkill {    
-}

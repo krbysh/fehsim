@@ -1,2 +1,0 @@
-class FehPassive extends FehSkill {    
-}

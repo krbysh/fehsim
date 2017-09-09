@@ -60,7 +60,7 @@ body {
 }
 
 .bottom-nav {
-    background:#797979;
+    background: #111;
     height:calc(var(--tile-size) * 1);
 }
 
@@ -94,13 +94,85 @@ body {
     background-image:url('../img/gui/bottom-nav-button-red.png');
 }
 
+/* HERO ======================================================== */
+
 .hero {
-    background-image:url('../img/heroes/Map_Lance_Cavalier.png');
-    background-size:cover;
+    position: absolute;
+    transition:0.20s;
+    z-index: 8;
+    --tile-icon: calc(var(--tile-size) / 72 * 17);
+    --tile-icon-margin: calc(var(--tile-size) / 72 * 3);
     width:var(--tile-size);
     height:var(--tile-size);
-    position:absolute;
-    z-index: 9;
-    cursor:pointer;
-    transform: translate(0px, 123px);
+}
+
+.hero img { width:var(--tile-size); height:var(--tile-size); }
+.hero.waiting img { filter: grayscale(100%) brightness(110%) contrast(90%); }
+
+.hero .weapon-icon {
+    width: var(--tile-icon);
+    height: var(--tile-icon);
+    margin: var(--tile-icon-margin);
+    position: absolute;
+    right:0;
+    z-index:10;
+    background-image: url('../img/gui/weapon/Icon_Class_Blue_Lance.png');
+    background-size: cover;
+}
+
+.hero .life-bar {
+    width: auto;
+    height: calc(var(--tile-icon) * 0.3);
+    bottom: calc(var(--tile-icon-margin) * 0.75);
+    right: 1px;
+    left: calc(var(--tile-icon) + var(--tile-icon-margin) * 2 - 0px);
+    background: black;
+    position: absolute;
+    z-index: 1;
+    display:flex;
+    padding:1px;
+    box-sizing: border-box ;
+}
+
+.hero .life-bar div {
+    background:hsl(4, 100%, 50%);
+    width: 100%;
+    height: 100%;
+}
+
+.hero p.hp {
+    position: absolute;
+    width: var(--tile-icon);
+    height: var(--tile-icon);
+    margin: var(--tile-icon-margin);
+    left:0;
+    bottom:0;
+    z-index:1;
+    font-size: calc(var(--tile-icon) * 1.1);
+    
+    color: red;
+    text-shadow: 0 0 5px #000000;    
+
+    font-weight:bold;
+}
+
+/* PLAYER */
+.hero.ltr img { transform: scale(-1, 1); }
+.hero.ltr .life-bar div { background:hsla(192, 100%, 45%, 1); }
+.hero.ltr .weapon-icon { left:0; }
+.hero.ltr p.hp { color:hsla(192, 100%, 45%, 1);}
+
+/* MAIN ======================================================== */
+
+body {
+    display:flex;
+    flex-flow:column;
+    height:100vh;
+    background:#232323;
+}
+
+.game {
+    margin:auto;
+    overflow:hidden;
+    box-shadow: 0 0 1em 0 rgba(0,0,0,1);
 }
