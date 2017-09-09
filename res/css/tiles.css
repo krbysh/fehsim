@@ -54,7 +54,7 @@
 .blue-frame .tile-frame {
     background-position: calc(var(--tile-size) * -1) 0px;
     background-size: auto calc(240 / 182 * var(--tile-size));
-    background-image: url('/res/img/gui/Status.png');
+    background-image: url('../img/gui/Status.png');
     animation: 2s tile-background-animation infinite linear;
 }
 
