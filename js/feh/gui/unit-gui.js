@@ -2,7 +2,7 @@ class FehMapHeroGui {
 
     /**
      * @param {FehBattleGui} gui
-     * @param {FehMapHero} hero 
+     * @param {FehUnit} hero 
      */
     constructor(gui, hero) {
 
@@ -31,7 +31,8 @@ class FehMapHeroGui {
         this.element.appendChild(this.lifeBarElement);
 
         let img = document.createElement('img');
-        img.src = '/res/img/heroes/Map_Lance_Cavalier.png';
+        img.src = hero.sprite;
+        if (!img.src) img.src = '/res/img/heroes/Map_Lance_Cavalier.png';
         this.element.appendChild(img);
 
         // this.element.addEventListener("transitionend", function (event) {

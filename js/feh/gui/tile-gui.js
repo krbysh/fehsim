@@ -44,14 +44,34 @@ class FehTileGui {
         let frame = document.createElement('div')
         frame.className = 'tile-frame';
 
+        let wall = document.createElement('wall')
+        wall.className = 'tile-wall';
+
         let arrow = document.createElement('div')
         arrow.className = 'tile-arrow';
+
+        let danger = document.createElement('wall')
+        danger.className = 'tile-danger';
 
         this.visualElement.appendChild(background);
         this.visualElement.appendChild(frame);
         this.visualElement.appendChild(arrow);
+        this.visualElement.appendChild(wall);
+        this.visualElement.appendChild(danger);
 
         this.clear();
+    }
+
+    setDanger() {
+        this.visualElement.classList.add('danger');
+    }
+
+    clearDanger() {
+        this.visualElement.classList.remove('danger');
+    }
+
+    setWall() {
+        this.visualElement.classList.add('wall-eu');
     }
 
     onclick() { this.gui.onTile(this.row, this.column); }

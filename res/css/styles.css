@@ -99,12 +99,10 @@ body {
 .hero {
     position: absolute;
     transition:0.20s;
-    z-index: 9;
-
+    z-index: 8;
     --tile-icon: calc(var(--tile-size) / 72 * 17);
     --tile-icon-margin: calc(var(--tile-size) / 72 * 3);
-
-    width:var(--tile-size); 
+    width:var(--tile-size);
     height:var(--tile-size);
 }
 

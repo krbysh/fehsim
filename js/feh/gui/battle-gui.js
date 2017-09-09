@@ -29,24 +29,6 @@ class FehBattleGui extends FehBattleListener {
         this.rootElement.classList.add('game');
         this.rootElement.innerHTML = '';
 
-        // BUILD MESSAGE ELEMENTS
-        this.msg = document.createElement('div');
-        this.msg.classList.add('phase-change-msg');
-        this.msg.addEventListener('animationend', e => {
-            console.log(e);
-            if (e.target !== this.msg) return;
-            this.msg.classList.remove('animate');
-            if (this.aiStepFunction)
-                this.aiStepFunction();
-        });
-        this.h1 = document.createElement('h1');
-        this.h2 = document.createElement('h2');
-        let msgBackground = document.createElement('div');
-        msgBackground.classList.add('phase-change-background');
-        this.msg.appendChild(this.h1);
-        this.msg.appendChild(this.h2);
-        this.msg.appendChild(msgBackground);
-
         // BUILD BOTTOM NAV
         this.swapSpacesButton = document.createElement('button');
         this.dangerZoneButton = document.createElement('button');
@@ -116,15 +98,29 @@ class FehBattleGui extends FehBattleListener {
         // BUILD
         this.rootElement.appendChild(this.mapElement);
         this.rootElement.appendChild(this.bottomNav);
-        this.rootElement.appendChild(this.msg);
+        // this.rootElement.appendChild(this.msg);
 
         this.guiHeroes = [];
 
-        this.tiles = this.getNewGuiTileArray();
-        this.tiles.forEach(row => row.forEach(tile => {
+        /**
+         * @type {FehTileGui[][]}
+         */
+        this.guiTiles = this.getNewGuiTileArray();
+        this.guiTiles.forEach(row => row.forEach(tile => {
             this.mapInput.appendChild(tile.inputElement);
             this.mapTiles.appendChild(tile.visualElement);
         }));
+
+        // BUILD MAP WALLS
+        for (let row = 0; row < 8; row++) {
+            for (let column = 0; column < 6; column++) {
+                let tileGui = this.guiTiles[row][column];
+                let tile = this.controller.battle.map.tiles[row][column];
+                if (tile == TERRAIN_BLOCK || tile == TERRAIN_WALL1) {
+                    tileGui.setWall();
+                }
+            }
+        }
 
     }
 
@@ -154,11 +150,26 @@ class FehBattleGui extends FehBattleListener {
      */
     onPhase(phase, turn) {
 
-        let battle = this.controller.battle;
+        if (phase !== PHASE_SWAP_SPACES) {
 
-        this.h1.innerText = phase;
-        this.h2.innerText = "Turno: " + turn;
-        this.msg.classList.add('animate');
+            // MESSAGE
+            let msg = document.createElement('div');
+            msg.className = 'animate phase-change-msg';
+            msg.innerHTML = '<h1>' + phase + '</h1><h2>Turn: ' + turn + '</h2><div class="phase-change-background"></div>'
+            msg.addEventListener('animationend', e => {
+                if (e.target !== msg) return;
+                msg.parentElement.removeChild(msg);
+                if (this.aiStepFunction)
+                    this.aiStepFunction();
+            });
+            this.rootElement.appendChild(msg);
+
+            // FIX para swap_spaces a medias
+            this.activeHero = null;
+
+        }
+
+        let battle = this.controller.battle;
 
         if (battle.canSwapSpaces && battle.phase == PHASE_PLAYER && battle.turn == 1) {
             this.swapSpacesButton.style.display = 'inline-block';
@@ -176,17 +187,47 @@ class FehBattleGui extends FehBattleListener {
 
         this.clearTiles();
         this.guiHeroes.forEach(guiHero => guiHero.reset());
+        this.updateDangerZone();
+
+        if (phase == PHASE_SWAP_SPACES) {
+            this.clearTiles();
+            this.enableSwapStyles();
+        }
     }
 
     /**
      * 
-     * @param {FehMapHero} hero 
+     * @param {FehUnit} hero 
+     * @param {FehUnit} target 
+     */
+    onSwap(hero, target) {
+        this.getGuiMapHeroForMapHero(hero).reset();
+        this.getGuiMapHeroForMapHero(target).reset();
+        this.clearTiles();
+        this.enableSwapStyles();
+    }
+
+    enableSwapStyles() {
+        this.guiHeroes.forEach(guiHero => guiHero.reset());
+        this.controller.getTeam().forEach(unit => {
+            let tile = this.getGuiTileWithHero(unit);
+            tile.showGreenFrame();
+            tile.turnGreen();
+        });
+    }
+
+    /**
+     * 
+     * @param {FehUnit} hero 
      * @param {Number} row 
      * @param {Number} column 
      */
     onMove(hero, row, column) {
 
+        // ACTUALIZAR LA POSICIÓN
         this.getGuiMapHeroForMapHero(hero).reset();
+
+        this.updateDangerZone();
 
         // PARCHE PARA LIMPIAR
         if (this.state == GUISTATE_SHOWING_ACTIONS || this.state == GUISTATE_SHOWINT_ACTION_PREVIEW) {
@@ -221,6 +262,54 @@ class FehBattleGui extends FehBattleListener {
     onTile(row, column) {
 
         let hero = this.controller.battle.getHeroAt(row, column);
+
+        if (this.controller.battle.phase == PHASE_SWAP_SPACES) {
+
+            // CLEAN EVERYTHING
+            this.clearTiles();
+
+            // SHOW RANGE OF CLICKED HEROES
+            if (hero) this.showRangeOf(hero);
+
+            // TURN ALLY TILES GREEN
+            this.enableSwapStyles();
+
+            // DID WE PICK OUR SECOND HERO TO SWAP? SWAP THEM!
+            if (this.activeHero && hero && !this.controller.isEnemy(hero)) {
+                let temp = this.activeHero;
+                this.activeHero = null;
+                this.controller.doAction(temp, null, null, hero);
+                return;
+            }
+
+            // DID WE PICK OUR FIRST HERO TO SWAP? SELECT IT!
+            if (this.activeHero == null && hero && !this.controller.isEnemy(hero))
+                this.activeHero = hero;
+
+            // DID WE TOUCH NOTHING? CANCEL FIRST HERO TO SWAP
+            if (hero == null)
+                this.activeHero = null;
+
+            // DO WE HAVE A HERO TO SWAP SELECTED?
+            if (this.activeHero) {
+
+                // SHOW ALLY TILES AS ACTIONABLE
+                this.controller.getTeam().forEach(ally => {
+                    let tile2 = this.getGuiTileWithHero(ally);
+                    tile2.clear();
+                    tile2.setActionable();
+                    tile2.showGreenFrame();
+                    tile2.turnGreen();
+                })
+
+                // SHOW FIRST HERO AS BLUE
+                let target = this.getGuiTileWithHero(this.activeHero);
+                target.showBlueFrame();
+                target.turnBlue();
+            }
+
+            return;
+        }
 
         if (this.state == GUISTATE_SHOWING_ACTIONS || this.state == GUISTATE_SHOWINT_ACTION_PREVIEW) {
 
@@ -301,22 +390,36 @@ class FehBattleGui extends FehBattleListener {
 
     }
 
+    updateDangerZone() {
+
+        // ACTUALIZAR DANGER ZONE
+        this.guiTiles.forEach(row => row.forEach(tile => tile.clearDanger()));
+        this.controller.getEnemyTeam().forEach(enemy => {
+            let query = new FehActionQuery();
+            let result = query.movementQuery(this.controller.battle, enemy, true);
+            result.tilesInAttackRange.forEach(node => {
+                this.guiTiles[node.row][node.column].setDanger();
+            });
+        });
+
+    }
+
     /**
      * 
-     * @param {FehMapHero} hero 
+     * @param {FehUnit} hero 
      */
     showRangeOf(hero) {
         console.log('BattleGui::showRangeOf(FehMapHero)');
         let result = this.controller.battle.getRangeOf(hero, true);
         this.clearTileColors();
         this.clearTileActionables();
-        result.tilesInAttackRange.forEach(node => this.tiles[node.row][node.column].turnRed());
-        result.traversableTiles.forEach(node => this.tiles[node.row][node.column].turnBlue());
+        result.tilesInAttackRange.forEach(node => this.guiTiles[node.row][node.column].turnRed());
+        result.traversableTiles.forEach(node => this.guiTiles[node.row][node.column].turnBlue());
     }
 
     /**
      * 
-     * @param {FehMapHero} hero 
+     * @param {FehUnit} hero 
      */
     showActionsOf(hero) {
         console.log('BattleGui::showActionsOf(FehMapHero)');
@@ -325,20 +428,20 @@ class FehBattleGui extends FehBattleListener {
         this.clearTileFrames();
         this.clearTileActionables();
         this.getGuiTileWithHero(this.activeHero).showBlueFrame();
-        result.tilesInAttackRange.forEach(node => this.tiles[node.row][node.column].turnRed());
-        result.traversableTiles.forEach(node => this.tiles[node.row][node.column].turnBlue());
+        result.tilesInAttackRange.forEach(node => this.guiTiles[node.row][node.column].turnRed());
+        result.traversableTiles.forEach(node => this.guiTiles[node.row][node.column].turnBlue());
         result.validMovementTiles.forEach(node => {
-            let tile = this.tiles[node.row][node.column];
+            let tile = this.guiTiles[node.row][node.column];
             tile.turnBlue();
             tile.setActionable();
         });
         result.validAttackTargetTiles.forEach(node => {
-            let tile = this.tiles[node.row][node.column];
+            let tile = this.guiTiles[node.row][node.column];
             tile.turnRed();
             tile.setActionable();
         });
         result.validAssistTargetTiles.forEach(node => {
-            let tile = this.tiles[node.row][node.column];
+            let tile = this.guiTiles[node.row][node.column];
             tile.turnGreen();
             tile.setActionable();
         });
@@ -347,10 +450,10 @@ class FehBattleGui extends FehBattleListener {
 
     /**
      * 
-     * @param {FehMapHero} hero 
+     * @param {FehUnit} hero 
      * @param {Number} row 
      * @param {Number} column 
-     * @param {FehMapHero} target
+     * @param {FehUnit} target
      */
     showActionPreview(hero, row, column, target) {
 
@@ -388,15 +491,13 @@ class FehBattleGui extends FehBattleListener {
             let guiHero = this.getGuiMapHeroForMapHero(hero);
             guiHero.setPosition(row, column);
 
-
         }
-
 
     }
 
     /**
      * 
-     * @param {FehMapHero} hero 
+     * @param {FehUnit} hero 
      * @returns {FehMapHeroGui}
      */
     getGuiMapHeroForMapHero(hero) {
@@ -424,33 +525,33 @@ class FehBattleGui extends FehBattleListener {
      * 
      */
     clearTileActionables() {
-        this.tiles.forEach(row => row.forEach(tile => tile.clearActionable()));
+        this.guiTiles.forEach(row => row.forEach(tile => tile.clearActionable()));
     }
 
     /**
      * 
      */
     clearTileColors() {
-        this.tiles.forEach(row => row.forEach(tile => tile.clearColor()));
+        this.guiTiles.forEach(row => row.forEach(tile => tile.clearColor()));
     }
 
     /**
      * 
      */
     clearTileFrames() {
-        this.tiles.forEach(row => row.forEach(tile => tile.clearFrame()));
+        this.guiTiles.forEach(row => row.forEach(tile => tile.clearFrame()));
     }
 
     /**
      * 
      */
     clearTileArrows() {
-        this.tiles.forEach(row => row.forEach(tile => tile.clearArrow()));
+        this.guiTiles.forEach(row => row.forEach(tile => tile.clearArrow()));
     }
 
     /**
      * 
-     * @param {FehMapHero} hero 
+     * @param {FehUnit} hero 
      * @returns {FehTileGui}
      */
     getGuiTileWithHero(hero) {
@@ -464,7 +565,7 @@ class FehBattleGui extends FehBattleListener {
      * @returns {FehTileGui}
      */
     getGuiTile(row, column) {
-        return this.tiles[row][column];
+        return this.guiTiles[row][column];
     }
 
     /**
