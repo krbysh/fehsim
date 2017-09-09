@@ -190,6 +190,16 @@ class FehBattleGui extends FehBattleListener {
         this.updateDangerZone();
 
         if (phase == PHASE_SWAP_SPACES) {
+
+            // CANCEL MOVEMENT ------------------------------------
+            this.clearTiles();
+            if (this.activeHero)
+                this.getGuiMapHeroForMapHero(this.activeHero).reset();
+            this.state = GUISTATE_NULL;
+            this.actionPreviewRow = null;
+            this.actionPreviewColumn = null;
+            // ----------------------------------------------------
+
             this.clearTiles();
             this.enableSwapStyles();
         }
@@ -223,6 +233,9 @@ class FehBattleGui extends FehBattleListener {
      * @param {Number} column 
      */
     onMove(hero, row, column) {
+
+        // QUEMADO DESPUES DE LA PRIMERA VEZ
+        this.swapSpacesButton.style.display = 'none';
 
         // ACTUALIZAR LA POSICIÓN
         this.getGuiMapHeroForMapHero(hero).reset();
@@ -341,6 +354,7 @@ class FehBattleGui extends FehBattleListener {
 
             if (!isInAttackRange && !isInMovementRange) {
                 // clicked empty tile
+                // CANCEL MOVEMENT
                 this.clearTiles();
                 this.getGuiMapHeroForMapHero(this.activeHero).reset();
                 this.state = GUISTATE_NULL;
