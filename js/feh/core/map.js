@@ -36,6 +36,7 @@ class FehMap {
          */
         this.enemySpaces = [];
     }
+
 }
 
 const TERRAIN_WATER = 'TERRAIN_WATER';

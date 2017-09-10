@@ -113,10 +113,11 @@ class FehController {
 
     /**
      * 
-     * @param {FehUnit} hero 
+     * @param {FehUnit} unit 
      */
-    owns(hero) {
-        return this.battle.belongsToPlayer(hero, this.playerKey)
+    owns(unit) {
+        if (!unit || !(unit instanceof FehUnit)) throw new FehException(EX_INVALID_TYPE, '"' + unit + '" is not a valid FehUnit');
+        return this.battle.belongsToPlayer(unit, this.playerKey)
     }
 
     /**
@@ -141,6 +142,11 @@ class FehBattle {
         this.map = null;
         this.playerController = new FehController(this, KEY_PLAYER);
         this.enemyController = new FehController(this, KEY_ENEMY);
+
+        /**
+         * @type {FehUnit[]}
+         */
+        this.heroes = [];
 
         /**
          * @type {FehUnit[]}
@@ -181,9 +187,14 @@ class FehBattle {
         // this.playerTeam = buildTeamFromBuild(this.teamBuild1);
         // this.enemyTeam = buildTeamFromBuild(this.teamBuild2);
 
-        this.heroes = []
+        this.heroes = [];
         this.playerTeam.forEach(heroe => this.heroes.push(heroe));
         this.enemyTeam.forEach(heroe => this.heroes.push(heroe));
+        this.heroes.forEach(unit => {
+            unit.battle = this;
+            unit.rebuild();
+        })
+
 
         for (let i = 0; i < this.playerTeam.length; i++) {
             let hero = this.playerTeam[i];
