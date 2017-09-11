@@ -269,20 +269,37 @@ class FehBattleGui extends FehBattleListener {
         if (this.state == GUISTATE_SELECTED_UNIT)
             this.setSelectedUnit(null);
 
+        // QUIZAS ESTO DEBERIA IR EN OTRO LADO
+        this.onAfterAction();
+    }
+
+    /**
+     * 
+     * @param {FehUnit} unit 
+     * @param {FehUnit} target 
+     */
+    onAssist(unit, target) {
+        this.getGuiMapHeroForMapHero(unit).reset();
+        this.getGuiMapHeroForMapHero(target).reset();
+        this.setSelectedUnit(null);
+
+        // QUIZAS ESTO DEBERIA IR EN OTRO LADO
+        this.onAfterAction();
+    }
+
+    onAfterAction() {
         // AUTO-END-TURN
         let actionsLeft = this.controller.getTeam().filter(hero => !hero.isWaiting).length;
         if (actionsLeft == 0) {
             this.controller.endTurn();
             return;
         }
-
         // AI_STEP
         if (!this.controller.isPlayerPhase()) {
             setTimeout(() => {
                 this.aiStepFunction();
             }, 300);
         }
-
     }
 
     /**
@@ -689,21 +706,33 @@ class FehBattleGui extends FehBattleListener {
     }
 
     showAttackDialog(row, col) {
-        if (row == 0 && col <= 2) this.dialogElement.classList.add('top-left');
-        if (row == 0 && col >= 3) this.dialogElement.classList.add('top-right');
         this.dialogElement.classList.add('attack');
         this.dialogElement.classList.add('dialog');
-        this.dialogElement.style.left = "calc(var(--tile-size) * " + col + ")";
-        this.dialogElement.style.top = "calc(var(--tile-size) * " + row + ")";
+        this.temp1(row, col);
     }
 
     showAssistDialog(row, col) {
-        if (row == 0 && col <= 2) this.dialogElement.classList.add('top-left');
-        if (row == 0 && col >= 3) this.dialogElement.classList.add('top-right');
         this.dialogElement.classList.add('assist');
         this.dialogElement.classList.add('dialog');
-        this.dialogElement.style.left = "calc(var(--tile-size) * " + col + ")";
-        this.dialogElement.style.top = "calc(var(--tile-size) * " + row + ")";
+        this.temp1(row, col);
+    }
+
+    temp1(row, col) {
+        if (row == 0 && col <= 2) {
+            this.dialogElement.classList.add('top-left');
+            this.dialogElement.style.right = "auto";
+            this.dialogElement.style.left = "calc(var(--tile-size) * (1 + " + col + "))";
+            this.dialogElement.style.top = "calc(var(--tile-size) * " + row + " - 53px + var(--tile-size) * 0.5)";
+        } else if (row == 0 && col >= 3) {
+            this.dialogElement.classList.add('top-right');
+            this.dialogElement.style.left = "auto";
+            this.dialogElement.style.right = "calc(var(--tile-size) * (6 - " + col + "))";
+            this.dialogElement.style.top = "calc(var(--tile-size) * " + row + " - 53px + var(--tile-size) * 0.5)";
+        } else {
+            this.dialogElement.style.right = "auto";
+            this.dialogElement.style.left = "calc(var(--tile-size) * " + col + " - 120px + var(--tile-size) / 2)";
+            this.dialogElement.style.top = "calc(var(--tile-size) * " + row + " - 120px + var(--tile-size) / 2 + 60px)";
+        }
     }
 
 

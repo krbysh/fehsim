@@ -28,19 +28,28 @@ class FehBattleListener {
 
     /**
      * 
-     * @param {FehUnit} hero 
+     * @param {FehUnit} unit 
      * @param {Number} row 
      * @param {Number} column 
      */
-    onMove(hero, row, column) {
+    onMove(unit, row, column) {
     }
 
     /**
      * 
-     * @param {FehUnit} hero1 
-     * @param {FehUnit} hero2 
+     * @param {FehUnit} unit 
+     * @param {FehUnit} target 
      */
-    onSwap(hero1, hero2) {
+    onSwap(unit, target) {
+    }
+
+    /**
+     * 
+     * @param {FehUnit} unit 
+     * @param {FehUnit} target 
+     */
+    onAssist(unit, target) {
+
     }
 }
 
@@ -276,27 +285,27 @@ class FehBattle {
     /**
      * 
      * @param {String} playerKey 
-     * @param {FehUnit} hero 
+     * @param {FehUnit} unit 
      * @param {Number} row 
      * @param {Number} column 
      * @param {FehUnit} target 
      */
-    doAction(playerKey, hero, row, column, target) {
+    doAction(playerKey, unit, row, column, target) {
 
         this.validatePhasePlayer(playerKey);
-        this.validateHeroOwnership(playerKey, hero);
+        this.validateHeroOwnership(playerKey, unit);
 
-        if (hero.isWaiting) throw new FehException(EX_ILLEGAL_MOVE, "The hero is waiting and can't move for the rest of the player phase");
+        if (unit.isWaiting) throw new FehException(EX_ILLEGAL_MOVE, "The unit is waiting and cannot move for the rest of the turn");
 
         if (this.phase == PHASE_SWAP_SPACES) {
             this.validateHeroOwnership(playerKey, target);
-            let row0 = hero.row;
-            let col0 = hero.column;
-            hero.row = target.row;
-            hero.column = target.column;
+            let row0 = unit.row;
+            let col0 = unit.column;
+            unit.row = target.row;
+            unit.column = target.column;
             target.row = row0;
             target.column = col0;
-            this.listeners.forEach(listener => listener.onSwap(hero, target));
+            this.listeners.forEach(listener => listener.onSwap(unit, target));
             return;
         }
 
@@ -312,26 +321,46 @@ class FehBattle {
 
             // Is it a valid move?
             let query = new FehActionQuery();
-            let result = query.movementQuery(this, hero, false);
+            let result = query.movementQuery(this, unit, false);
             let node = result.validMovementTiles.find(t => t.row == row && t.column == column);
-            if (!node) throw new FehException(EX_ILLEGAL_MOVE, 'The coordinates do not belong to a valid movement tile');
+            if (!node) throw new FehException(EX_ILLEGAL_MOVE, 'The unit cannot move to those coordinates');
 
             console.log('MOVE');
-            hero.isWaiting = true;
-            hero.row = row;
-            hero.column = column;
+            unit.isWaiting = true;
+            unit.row = row;
+            unit.column = column;
 
-            this.listeners.forEach(listener => listener.onMove(hero, row, column));
+            this.listeners.forEach(listener => listener.onMove(unit, row, column));
 
         } else {
 
             // ATTACK or ASSIST
             this.validateCoordinates(row, column);
-            this.validateMapHero(target);
+            this.validateUnit(target);
 
-            if (hero.playerKey == target.playerKey) console.log('ASSIST');
-            else console.log('ATTACK');
+            if (unit.playerKey == target.playerKey) {
 
+                // ASSIST
+
+                // Is it a valid move?
+                let query = new FehActionQuery();
+                let result = query.movementQuery(this, unit, false);
+                let toNode = result.validAssistTargetTiles.find(n => n.row == target.row && n.column == target.column);
+                if (!toNode) throw new FehException(EX_ILLEGAL_MOVE, 'The target cannot be assisted by the unit');
+                let fromNode = toNode.assistableFrom.find(n => n.row == row && n.column == column);
+                if (!fromNode) throw new FehException(EX_ILLEGAL_MOVE, 'The target cannot be assisted from those coordinates');
+
+                console.log('ASSIST');
+                unit.isWaiting = true;
+                unit.row = row;
+                unit.column = column;
+                unit.assist.assist(unit, target);
+
+                this.listeners.forEach(listener => listener.onAssist(unit, target));
+
+            } else {
+                console.log('ATTACK');
+            }
         }
 
         this.canSwapSpaces = false;
@@ -395,7 +424,7 @@ class FehBattle {
      * @returns {FehMovementQueryResult}
      */
     getRangeOf(hero, allyTilesAreValidMovementSpaces = false) {
-        this.validateMapHero(hero);
+        this.validateUnit(hero);
         let query = new FehActionQuery();
         let result = query.movementQuery(this, hero, allyTilesAreValidMovementSpaces);
         return result;
@@ -477,7 +506,7 @@ class FehBattle {
      * @param {FehUnit} hero 
      * @throws {FehException}
      */
-    validateMapHero(hero) {
+    validateUnit(hero) {
         if (hero === null || hero === undefined || !(hero instanceof FehUnit))
             throw new FehException(EX_INVALID_TYPE, "'" + hero + "' is not a FehMapHero");
         if (this.playerTeam.indexOf(hero) < 0 && this.enemyTeam.indexOf(hero) < 0)
@@ -491,7 +520,7 @@ class FehBattle {
      * @throws {FehException}
      */
     validateHeroOwnership(playerKey, hero) {
-        this.validateMapHero(hero);
+        this.validateUnit(hero);
         if (playerKey != hero.playerKey) throw new FehException(EX_WRONG_PLAYER, "'" + hero + "' is not on team '" + playerKey + "'");
     }
 

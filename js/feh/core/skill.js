@@ -50,20 +50,35 @@ class FehAssist extends FehSkill {
      * @param {string} name 
      * @param {number} range
      * @param {function(FehUnit, FehUnit)} onAssist
-     * @param {function(FehUnit, FehUnit)} isValidTarget
+     * @param {function(FehUnit, number, number, FehUnit)} isValidTarget
      */
     constructor(name, range, onAssist = null, isValidTarget = null) {
         super(SKILL_ASSIST, name);
         this.range = range;
-        if (onAssist) this.onAssist = onAssist;
 
         /**
          * @type {function(FehUnit, number, number, FehUnit)}
          */
-        this.isValidTarget = (unit, unitRow, unitColumn, target) => true;
+        this.isAssistable = (unit, unitRow, unitColumn, target) => true;
+        /**
+         * @type {function(FehUnit, FehUnit)}
+         */
+        this.onAssist = (unit, target) => { };
 
-        if (isValidTarget) this.isValidTarget = isValidTarget;
+        if (onAssist) this.onAssist = onAssist;
+        if (isValidTarget) this.isAssistable = isValidTarget;
 
+    }
+
+    /**
+     * 
+     * @param {FehUnit} unit 
+     * @param {number} row 
+     * @param {number} column 
+     * @param {FehUnit} target 
+     */
+    assist(unit, target) {
+        this.onAssist(unit, target);
     }
 
     /**
@@ -74,20 +89,9 @@ class FehAssist extends FehSkill {
         unit.assistRange = this.range;
     }
 
-    /**
-     * 
-     * @param {FehUnit} unit 
-     * @param {FehUnit} target 
-     */
-    onAssist(unit, target) {
-    }
-
 }
 
-const ARDENT_SACRIFICE = new FehAssist("Ardent Sacrifice", 1, (unit, target) => {
-    unit.heal(-10);
-    target.heal(10);
-});
+const ARDENT_SACRIFICE = new FehAssist("Ardent Sacrifice", 1, (u, t) => { u.heal(-10); u.heal(10); });
 
 const RECIPROCAL_AID = new FehAssist("Reciprocal Aid", 1, (unit, target) => {
     let temp = unit.hp;
@@ -155,34 +159,32 @@ const SING = new FehAssist("Sing", 1,
 
 const DRAW_BACK = new FehAssist("Draw Back", 1,
     (unit, target) => {
-        let backRow = unitRow - target.row + unitRow;
-        let backColumn = unitColumn - target.column + unitColumn;
-        let formerRow = unitRow;
-        let formerColumn = unitColumn;;
+        
+        let backRow = unit.row - target.row + unit.row;
+        let backColumn = unit.column - target.column + unit.column;
+        let formerRow = unit.row;
+        let formerColumn = unit.column;;
         unit.row = backRow;
         unit.column = backColumn;
         target.row = formerRow;
         target.column = formerColumn;
+
     },
-    (/** @type {FehUnit} */unit, unitRow, unitColumn, target) => {
+    (unit, fromRow, fromColumn, target) => {
 
-        console.log('DRAW BACK :: isValidTarget(' + unit.name + ', ' + target.name + ')')
-        let backRow = unitRow - target.row + unitRow;
-        let backColumn = unitColumn - target.column + unitColumn;
-        let formerRow = unitRow;
-        let formerColumn = unitColumn;
+        let backRow = fromRow - target.row + fromRow;
+        let backCol = fromColumn - target.column + fromColumn;
+        let formerRow = fromRow;
+        let formerColumn = fromColumn;
 
-        console.log('(' + backRow + ', ' + backColumn + ') & (' + formerRow + ', ' + formerColumn + ')')
+        if (backRow < 0 || backCol < 0 || backCol >= 6 || backRow >= 8) return false;
 
-        if (backRow < 0 || backColumn < 0 || backColumn >= 6 || backRow >= 8) return false;
+        let o = unit.battle.getHeroAt(backRow, backCol);
+        if (o == unit || o == target) o = null;
 
-        let otherUnit = unit.battle.getHeroAt(backRow, backColumn);
-        if (otherUnit == unit || otherUnit == target)
-            otherUnit = null;
-
-        return unit.isTraversableTerrain(unit.battle.map.tiles[backRow][backColumn]) &&
+        return unit.isTraversableTerrain(unit.battle.map.tiles[backRow][backCol]) &&
             target.isTraversableTerrain(unit.battle.map.tiles[formerRow][formerColumn]) &&
-            !otherUnit;
+            !o;
     }
 );
 

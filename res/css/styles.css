@@ -1,7 +1,9 @@
 :root {
-    --tile-size: 72px;
+    --tile-raw: 72;
+    --tile-size: calc(var(--tile-raw) * 1px);
     --font-size: 14px;
 }
+
 
 body {
     margin: 0;
@@ -162,41 +164,84 @@ body {
 .hero.ltr .weapon-icon { left:0; }
 .hero.ltr p.hp { color:hsla(192, 100%, 45%, 1);}
 
+/* ---------------------------------------------------------------------- */
 /* SMALL DIALOG ABOVE TARGET */
 
 @keyframes dialog-hover-animation {
-    0%,100% { transform:translateY(0) rotateZ(90deg) scale(0.4); }
-    50% { transform:translateY(calc(var(--tile-size) * +0.05)) rotateZ(90deg) scale(0.4); }
+    0%, 100% {
+        transform:
+            translate(0, calc(var(--tile-size) * -0.4))
+            rotateZ(90deg)
+            scale(calc(0.4 * var(--tile-raw)/72));
+    }
+    50% {
+        transform:
+            translate(0, calc(var(--tile-size) * -0.3))
+            rotateZ(90deg)
+            scale(calc(0.4 * var(--tile-raw)/72));
+    }
 }
 
 @keyframes dialog-hover-animation-top-left {
-    0%,100% { transform:translateY(0) rotateZ(0deg) scale(0.4); }
-    50% { transform:translateX(calc(var(--tile-size) * +0.05)) rotateZ(0deg) scale(0.4); }
+    0%,100% {
+        transform:
+            translate(calc(var(--tile-size) * -0.1), 0)
+            rotateZ(0deg)
+            scale(calc(0.4 * var(--tile-raw)/72));
+    }
+    50% {
+        transform:
+            translate(calc(var(--tile-size) * -0.2), 0)
+            rotateZ(0deg)
+            scale(calc(0.4 * var(--tile-raw)/72));
+    }
 }
 
 @keyframes dialog-hover-animation-top-right {
-    0%,100% { transform:translateY(0) rotateZ(0deg) scale(0.4); }
-    50% { transform:translateX(calc(var(--tile-size) * +0.05)) rotateZ(0deg) scale(0.4); }
+    0%,100% {
+        transform:
+            translate(calc(var(--tile-size) * 0.1), 0)
+            rotateZ(0deg)
+            scale(calc(0.4 * var(--tile-raw)/72));
+    }
+    50% {
+        transform:
+            translate(calc(var(--tile-size) * 0.2), 0)
+            rotateZ(0deg)
+            scale(calc(0.4 * var(--tile-raw)/72));
+    }
 }
 
 .dialog {
-
     display:block;    
     position:absolute;
-    
     z-index:10;
-    width:120px;
-    height:120px;
-    margin-top: calc( -1 * var(--tile-size));
-    margin-left: calc(-120px + 72px + (120px - 72px) / 2 );
-    left:calc(var(--tile-size) * 3);
-    top:calc(var(--tile-size) * 6);
-
-    animation: dialog-hover-animation 1.125s linear infinite;
-    
     background-image: url(../img/gui/Status.png);
+
     background-position: 122px -8px;
+    width: 120px;
+    height: 120px;
+    
+    transform-origin: right center;
+    animation: dialog-hover-animation 1s infinite linear;
 }
+
+.top-left.dialog {
+    width:133px;
+    height:106px;
+    background-position: 260px 218px;
+    animation: dialog-hover-animation-top-left 1s infinite linear;
+    transform-origin: left center;
+}
+
+.top-right.dialog {
+    width:133px;
+    height:106px;
+    background-position: 201px 108px;
+    animation: dialog-hover-animation-top-right 1s infinite linear;
+}
+
+.dialog div { position:absolute; }
 
 .assist.dialog div {
     width: 62px;
@@ -204,7 +249,6 @@ body {
     transform:rotate(-90deg);
     margin-top: 25px;
     margin-left: 25px;
-    position:absolute;
     background-image: url(../img/gui/Status.png);
     background-position: 64px 71px;
 }
@@ -215,27 +259,8 @@ body {
     transform:rotate(0deg);
     margin-top: 28px;
     margin-left: 20px;
-    position:absolute;
     background-image: url(../img/gui/Status.png);
     background-position: 831px 202px;
-}
-
-.top-left.dialog {
-    animation: dialog-hover-animation-top-left 1.125s linear infinite;
-    width:133px;
-    height:106px;
-    background-position: 260px 218px;
-    margin-top: -17px;
-    margin-left: calc(0px + 22px);
-}
-
-.top-right.dialog {
-    animation: dialog-hover-animation-top-left 1.125s linear infinite;
-    width:133px;
-    height:106px;
-    background-position: 201px 108px;
-    margin-top: -17px;
-    margin-left: calc(var(--tile-size) * -1 - 15px);
 }
 
 .top-right.assist.dialog div {

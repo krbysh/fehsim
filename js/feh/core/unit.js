@@ -398,7 +398,7 @@ class FehUnit {
     isValidAssistTarget(row, column, target) {
         if (!this.assist) return false;
         if (!target) return false;
-        return this.assist.isValidTarget(this, row, column, target);
+        return this.assist.isAssistable(this, row, column, target);
     }
 
     /**
@@ -443,12 +443,16 @@ class FehUnit {
                 } else {
                     if (terrainType === TERRAIN_PLAIN || terrainType === TERRAIN_TREES) return true;
                 }
+                return false;
             case MOVEMENT_CAVALRY:
                 if (terrainType === TERRAIN_PLAIN) return true;
+                return false;
             case MOVEMENT_FLIER:
                 if (terrainType !== TERRAIN_BLOCK) return true;
+                return false;
+            default:
+                return false;
         }
-        return false;
     }
 
     onAttackStart() {
