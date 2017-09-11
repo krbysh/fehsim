@@ -139,6 +139,10 @@ class FehBattleGui extends FehBattleListener {
             }
         }
 
+        this.dialogElement = document.createElement('div');
+        let dialogElementIcon = document.createElement('div');
+        this.dialogElement.appendChild(dialogElementIcon);
+        this.mapElement.appendChild(this.dialogElement);
     }
 
     onStart() {
@@ -156,7 +160,7 @@ class FehBattleGui extends FehBattleListener {
 
         heroes.forEach(hero => this.guiHeroes.push(new FehMapHeroGui(this, hero)));
 
-        this.guiHeroes.forEach(hero => this.mapHeroesElement.appendChild(hero.element))
+        this.guiHeroes.forEach(hero => this.mapHeroesElement.appendChild(hero.visualElement))
         this.guiHeroes.forEach(hero => hero.reset());
     }
 
@@ -344,6 +348,10 @@ class FehBattleGui extends FehBattleListener {
             let targetNode = result.getNodeAt(this.selectedTarget.row, this.selectedTarget.column);
             let node = result.getNodeAt(row, column);
 
+            let actionConfirmationTile =
+                this.selectedTarget.row === row &&
+                this.selectedTarget.column === column;
+
             // DUPLICATED_CODE
             let emptyIrrelevantTile =
                 !unit &&
@@ -360,15 +368,23 @@ class FehBattleGui extends FehBattleListener {
                 this.selectedUnitRow0 === row &&
                 this.selectedUnitColumn0 === column;
 
+            // DUPLICATED CODE
+            let confirmationTile =
+                this.selectedRow === row &&
+                this.selectedColumn === column;
+
             let targetIsAssistableOrAttackableFromTile =
-                targetNode.assistableFrom.indexOf(node) >= 0;
+                targetNode.assistableFrom.indexOf(node) >= 0 ||
+                targetNode.attackableFrom.indexOf(node) >= 0;
 
             // DUPLICATED_CODE
             let unitInValidAssistOrAttackRange =
                 result.validAttackTargetTiles.indexOf(node) >= 0 ||
                 result.validAssistTargetTiles.indexOf(node) >= 0;
 
-            if (emptyIrrelevantTile || originalSelectedTile) this.setSelectedUnit(null);
+            if (emptyIrrelevantTile) this.setSelectedUnit(null);
+            else if (confirmationTile) this.setSelectedTarget(null);
+            else if (actionConfirmationTile) this.controller.doAction(this.selectedUnit, this.selectedRow, this.selectedColumn, this.selectedTarget);
             else if (unitInValidAssistOrAttackRange) this.setSelectedTarget(unit);
             else if (targetIsAssistableOrAttackableFromTile) this.setSelectedPosition(row, column);
             else if (validMovementTile) {
@@ -438,8 +454,9 @@ class FehBattleGui extends FehBattleListener {
 
         } else {
 
-            this.clearTiles();
+            if (this.selectedTarget) this.setSelectedTarget(null);
             if (this.selectedUnit) this.getGuiMapHeroForMapHero(this.selectedUnit).reset();
+            this.clearTiles();
             this.selectedUnit = null;
             this.selectedTarget = null;
             this.state = GUISTATE_HOME;
@@ -515,29 +532,36 @@ class FehBattleGui extends FehBattleListener {
                 tile.clearFrame();
             });
 
-            let selectedNode = this.queryResult.getNodeAt(this.selectedRow, this.selectedColumn);
+            this.clearDialog();
 
+            let selectedNode = this.queryResult.getNodeAt(this.selectedRow, this.selectedColumn);
             let targetNode = this.queryResult.getNodeAt(target.row, target.column);
-            targetNode.assistableFrom.forEach(m => {
-                let tile = this.getGuiTile(m.row, m.column);
-                tile.setActionable();
-            });
 
             let targetTile = this.getGuiTileWithHero(this.selectedTarget);
             if (this.controller.owns(this.selectedTarget)) {
+                targetNode.assistableFrom.forEach(m => {
+                    let tile = this.getGuiTile(m.row, m.column);
+                    tile.setActionable();
+                });
                 if (targetNode.assistableFrom.indexOf(selectedNode) < 0) {
                     let closestNode = targetNode.assistableFrom.sort((a, b) => selectedNode.getManhathanDistanceTo(a) - selectedNode.getManhathanDistanceTo(b))[0];
                     this.setSelectedPosition(closestNode.row, closestNode.column);
                 }
                 targetTile.showGreenFrame();
                 targetTile.setActionable();
+                this.showAssistDialog(this.selectedTarget.row, this.selectedTarget.column);
             } else {
+                targetNode.attackableFrom.forEach(m => {
+                    let tile = this.getGuiTile(m.row, m.column);
+                    tile.setActionable();
+                });
                 if (targetNode.attackableFrom.indexOf(selectedNode) < 0) {
                     let closestNode = targetNode.attackableFrom.sort((a, b) => selectedNode.getManhathanDistanceTo(a) - selectedNode.getManhathanDistanceTo(b))[0];
                     this.setSelectedPosition(closestNode.row, closestNode.column);
                 }
                 targetTile.showRedFrame();
                 targetTile.setActionable();
+                this.showAttackDialog(this.selectedTarget.row, this.selectedTarget.column);
             }
 
             let selectedUnitTile = this.getGuiTile(this.selectedRow, this.selectedColumn);
@@ -547,6 +571,8 @@ class FehBattleGui extends FehBattleListener {
             this.state = GUISTATE_SELECTED_TARGET;
 
         } else {
+
+            this.clearDialog();
 
             this.queryResult.validMovementTiles.forEach(node => {
                 let tile = this.getGuiTile(node.row, node.column);
@@ -657,5 +683,28 @@ class FehBattleGui extends FehBattleListener {
         }
         return tiles;
     }
+
+    clearDialog() {
+        this.dialogElement.className = '';
+    }
+
+    showAttackDialog(row, col) {
+        if (row == 0 && col <= 2) this.dialogElement.classList.add('top-left');
+        if (row == 0 && col >= 3) this.dialogElement.classList.add('top-right');
+        this.dialogElement.classList.add('attack');
+        this.dialogElement.classList.add('dialog');
+        this.dialogElement.style.left = "calc(var(--tile-size) * " + col + ")";
+        this.dialogElement.style.top = "calc(var(--tile-size) * " + row + ")";
+    }
+
+    showAssistDialog(row, col) {
+        if (row == 0 && col <= 2) this.dialogElement.classList.add('top-left');
+        if (row == 0 && col >= 3) this.dialogElement.classList.add('top-right');
+        this.dialogElement.classList.add('assist');
+        this.dialogElement.classList.add('dialog');
+        this.dialogElement.style.left = "calc(var(--tile-size) * " + col + ")";
+        this.dialogElement.style.top = "calc(var(--tile-size) * " + row + ")";
+    }
+
 
 }

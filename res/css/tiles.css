@@ -3,7 +3,7 @@
 {
     display: grid;
     grid-template-columns: var(--tile-size) var(--tile-size) var(--tile-size) var(--tile-size) var(--tile-size) var(--tile-size);
-    z-index:10;
+    z-index: 100;
     position:absolute;
     cursor:pointer;
 }
@@ -82,7 +82,10 @@
     animation:none;
 }
 
-.action.blue-frame .tile-background {
+
+.action.blue-frame .tile-background ,
+.action.red-frame .tile-background ,
+.action.green-frame .tile-background {
     animation: 1s tile-action-animation infinite linear; 
 }
 
@@ -152,3 +155,6 @@
     background:rgba(255, 0, 0, 0.2);
     position:absolute;
 }
+
+/* =========== DIALOGS */
+
