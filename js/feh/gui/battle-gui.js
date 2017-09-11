@@ -2,6 +2,7 @@ const GUISTATE_HOME = 'GUISTATE_HOME';
 const GUISTATE_SELECTED_UNIT = 'GUISTATE_SELECTED_UNIT';
 const GUISTATE_SELECTED_COORDINATES = 'GUISTATE_SELECTED_COORDINATES';
 const GUISTATE_SELECTED_TARGET = 'GUISTATE_SELECTED_TARGET';
+const GUISTATE_SWAP = 'GUISTATE_SWAP';
 
 class FehBattleGui extends FehBattleListener {
 
@@ -171,6 +172,11 @@ class FehBattleGui extends FehBattleListener {
      */
     onPhase(phase, turn) {
 
+        this.selectedUnit = null;
+        this.selectedTarget = null;
+        this.selectedRow = -1;
+        this.selectedColumn = -1;
+
         if (phase !== PHASE_SWAP_SPACES) {
 
             // MESSAGE
@@ -185,8 +191,8 @@ class FehBattleGui extends FehBattleListener {
             });
             this.rootElement.appendChild(msg);
 
-            // FIX para swap_spaces a medias
-            this.activeHero = null;
+            // STATE
+            this.state = GUISTATE_HOME;
 
         }
 
@@ -223,6 +229,7 @@ class FehBattleGui extends FehBattleListener {
             */
             // ----------------------------------------------------
 
+            this.state = GUISTATE_SWAP;
             this.clearTiles();
             this.enableSwapStyles();
         }
@@ -316,6 +323,41 @@ class FehBattleGui extends FehBattleListener {
             if (unit && !unit.isWaiting && this.controller.owns(unit)) this.setSelectedUnit(unit);
             if (unit && (unit.isWaiting || !this.controller.owns(unit))) this.showStatusOf(unit);
             if (!unit) this.clearTiles();
+
+        } else if (this.state == GUISTATE_SWAP) {
+
+            console.log('SWAPITY SWAP')
+
+            if (unit && this.controller.owns(unit) && this.selectedUnit) {
+
+                this.clearTiles();
+                this.enableSwapStyles();
+                this.controller.doAction(this.selectedUnit, null, null, unit);
+                this.selectedUnit = null;
+
+            } else if (unit && this.controller.owns(unit)) {
+
+                this.selectedUnit = unit;
+
+                this.showStatusOf(unit);
+                let srcTile = this.getGuiTileWithHero(unit);
+                srcTile.turnBlue();
+                srcTile.setActionable();
+                srcTile.showBlueFrame();
+                this.controller.getTeam().forEach(ally => {
+                    if (ally === unit) return;
+                    let dstTile = this.getGuiTileWithHero(ally);
+                    dstTile.turnGreen();
+                    dstTile.clearActionable();
+                    dstTile.showGreenFrame();
+                });
+
+            } else if (!unit) {
+
+                this.clearTiles();
+                this.enableSwapStyles();
+                this.selectedUnit = null;
+            }
 
         } else if (this.state == GUISTATE_SELECTED_UNIT) {
 
@@ -418,7 +460,7 @@ class FehBattleGui extends FehBattleListener {
      * @param {FehUnit} unit 
      */
     showStatusOf(unit) {
-        if (this.state == GUISTATE_HOME) {
+        if (this.state == GUISTATE_HOME || this.state == GUISTATE_SWAP) {
             let result = this.controller.battle.getRangeOf(unit, true);
             this.clearTileColors();
             this.clearTileActionables();
