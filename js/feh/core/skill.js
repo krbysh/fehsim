@@ -159,7 +159,7 @@ const SING = new FehAssist("Sing", 1,
 
 const DRAW_BACK = new FehAssist("Draw Back", 1,
     (unit, target) => {
-        
+
         let backRow = unit.row - target.row + unit.row;
         let backColumn = unit.column - target.column + unit.column;
         let formerRow = unit.row;
@@ -185,6 +185,26 @@ const DRAW_BACK = new FehAssist("Draw Back", 1,
         return unit.isTraversableTerrain(unit.battle.map.tiles[backRow][backCol]) &&
             target.isTraversableTerrain(unit.battle.map.tiles[formerRow][formerColumn]) &&
             !o;
+    }
+);
+
+/**
+ * Unit moves to opposite side of adjacent ally.
+ */
+const PIVOT = new FehAssist("Pivot", 1,
+    (unit, target) => {
+        let or = 2 * (target.row - unit.row) + unit.row;
+        let oc = 2 * (target.column - unit.column) + unit.column;     
+        unit.row = or;
+        unit.column = oc;
+    },
+    (unit, r0, c0, target) => {
+        let or = 2 * (target.row - r0) + r0;
+        let oc = 2 * (target.column - c0) + c0;
+        if (or < 0 || oc < 0 || oc >= 6 || or >= 8) return false;
+        let ou = unit.battle.getHeroAt(or, oc);
+        if (ou === unit) ou = null;
+        return unit.isTraversableTerrain(unit.battle.map.tiles[or][oc]) && !ou;
     }
 );
 

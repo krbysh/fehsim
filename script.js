@@ -102,7 +102,7 @@ lynBraveHeroes.equip(DRAW_BACK);
 
 let royBraveHeroes = new FehUnit();
 royBraveHeroes.hero = new FehOverwriteHero("Roy (Brave Heroes)", WEAPON_SWORD, MOVEMENT_CAVALRY, 40, 30, 30, 25, 25);
-royBraveHeroes.equip(DRAW_BACK);
+royBraveHeroes.equip(PIVOT);
 
 let leo = new FehUnit();
 leo.hero = new FehOverwriteHero("Leo", WEAPON_RED_TOME, MOVEMENT_CAVALRY, 40, 30, 30, 25, 25);
