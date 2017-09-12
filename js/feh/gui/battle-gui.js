@@ -30,6 +30,11 @@ class FehBattleGui extends FehBattleListener {
          */
         this.queryResult = null;
 
+        /**
+         * @type {number}
+         */
+        this.lastOnTileEvent = new Date().getTime();
+
         this.rebuild();
     }
 
@@ -316,6 +321,12 @@ class FehBattleGui extends FehBattleListener {
      */
     onTile(row, column) {
 
+        let t1 = new Date().getTime();
+        let t0 = this.lastOnTileEvent;
+        let t = t1 - t0;
+        this.lastOnTileEvent = t1;
+        let doubleTap = t < 200;
+
         let unit = this.controller.battle.getUnitAt(row, column);
 
         if (this.state == GUISTATE_HOME) {
@@ -394,7 +405,8 @@ class FehBattleGui extends FehBattleListener {
                 result.validAttackTargetTiles.indexOf(node) >= 0 ||
                 result.validAssistTargetTiles.indexOf(node) >= 0;
 
-            if (emptyIrrelevantTile || originalSelectedTile) this.setSelectedUnit(null);
+            if (emptyIrrelevantTile || originalSelectedTile && !doubleTap) this.setSelectedUnit(null);
+            else if (originalSelectedTile && doubleTap) this.controller.doAction(this.selectedUnit);
             else if (unitInValidAssistOrAttackRange) this.setSelectedTarget(unit);
             else if (confirmationTile) this.controller.doAction(this.selectedUnit, this.selectedRow, this.selectedColumn, null);
             else if (unitNotInValidAttackOrAssistTile) this.showStatusOf(unit);

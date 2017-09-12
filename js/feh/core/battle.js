@@ -313,6 +313,8 @@ class FehBattle {
 
             // WAIT
             console.log('WAIT');
+            unit.isWaiting = true;
+            this.listeners.forEach(listener => listener.onMove(unit, row, column));
 
         } else if (isNullOrUndefined(target)) {
 
