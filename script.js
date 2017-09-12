@@ -98,15 +98,15 @@ olivia.equip(DANCE);
 
 let lynBraveHeroes = new FehUnit();
 lynBraveHeroes.hero = new FehOverwriteHero("Lyn (Brave Heroes)", WEAPON_BOW, MOVEMENT_CAVALRY, 40, 30, 30, 25, 25);
-lynBraveHeroes.equip(DRAW_BACK);
+lynBraveHeroes.equip(SMITE);
 
 let royBraveHeroes = new FehUnit();
 royBraveHeroes.hero = new FehOverwriteHero("Roy (Brave Heroes)", WEAPON_SWORD, MOVEMENT_CAVALRY, 40, 30, 30, 25, 25);
-royBraveHeroes.equip(PIVOT);
+royBraveHeroes.equip(SHOVE);
 
 let leo = new FehUnit();
 leo.hero = new FehOverwriteHero("Leo", WEAPON_RED_TOME, MOVEMENT_CAVALRY, 40, 30, 30, 25, 25);
-leo.equip(DRAW_BACK);
+leo.equip(SWAP);
 
 let playerTeam = [];
 playerTeam.push(olivia);

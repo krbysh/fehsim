@@ -194,7 +194,7 @@ const DRAW_BACK = new FehAssist("Draw Back", 1,
 const PIVOT = new FehAssist("Pivot", 1,
     (unit, target) => {
         let or = 2 * (target.row - unit.row) + unit.row;
-        let oc = 2 * (target.column - unit.column) + unit.column;     
+        let oc = 2 * (target.column - unit.column) + unit.column;
         unit.row = or;
         unit.column = oc;
     },
@@ -205,6 +205,98 @@ const PIVOT = new FehAssist("Pivot", 1,
         let ou = unit.battle.getHeroAt(or, oc);
         if (ou === unit) ou = null;
         return unit.isTraversableTerrain(unit.battle.map.tiles[or][oc]) && !ou;
+    }
+);
+
+/**
+ * Moves adjacent ally to opposite side of unit.
+ * It's like a DRAW_BACK where the target moves to the back tile.
+ */
+const REPOSITION = new FehAssist("Reposition", 1,
+    (unit, target) => {
+        let backRow = unit.row - target.row + unit.row;
+        let backColumn = unit.column - target.column + unit.column;
+        target.row = backRow;
+        target.column = backColumn;
+    },
+    (unit, fromRow, fromColumn, target) => {
+        let backRow = fromRow - target.row + fromRow;
+        let backCol = fromColumn - target.column + fromColumn;
+        if (backRow < 0 || backCol < 0 || backCol >= 6 || backRow >= 8) return false;
+        let o = unit.battle.getHeroAt(backRow, backCol);
+        return target.isTraversableTerrain(unit.battle.map.tiles[backRow][backCol]) && !o;
+    }
+);
+
+/**
+ * Push adjacent ally 1 space farther away.
+ * It's like a PIVOT where the target moves to the opposite side.
+ */
+const SHOVE = new FehAssist("Shove", 1,
+    (unit, target) => {
+        let or = (target.row - unit.row) * 1 + target.row;
+        let oc = (target.column - unit.column) * 1 + target.column;
+        target.row = or;
+        target.column = oc;
+    },
+    (unit, r0, c0, target) => {
+        let or = (target.row - r0) * 1 + target.row;
+        let oc = (target.column - c0) * 1 + target.column;
+        if (or < 0 || oc < 0 || oc >= 6 || or >= 8) return false;
+        let ou = unit.battle.getHeroAt(or, oc);
+        if (ou === unit) ou = null;
+        return target.isTraversableTerrain(unit.battle.map.tiles[or][oc]) && !ou;
+    }
+);
+
+/**
+ * Push adjacent ally 2 spaces farther away.
+ */
+const SMITE = new FehAssist("Smite", 1,
+    (unit, target) => {
+        let or = (target.row - unit.row) * 2 + target.row;
+        let oc = (target.column - unit.column) * 2 + target.column;
+        target.row = or;
+        target.column = oc;
+    },
+    (unit, r0, c0, target) => {
+
+        let or = (target.row - r0) * 2 + target.row;
+        let oc = (target.column - c0) * 2 + target.column;
+        if (or < 0 || oc < 0 || oc >= 6 || or >= 8) return false;
+        let ou = unit.battle.getHeroAt(or, oc);
+        if (ou === unit) ou = null;
+
+        if (!(target.isTraversableTerrain(unit.battle.map.tiles[or][oc]) && !ou)) return false;
+
+        let mr = (target.row - r0) * 1 + target.row;
+        let mc = (target.column - c0) * 1 + target.column;
+        let terrain = unit.battle.map.tiles[mr][mc];
+        let isSmiteable =
+            terrain == TERRAIN_PLAIN ||
+            terrain == TERRAIN_MNTIN ||
+            terrain == TERRAIN_TREES ||
+            terrain == TERRAIN_WATER;
+
+        return isSmiteable;
+    }
+);
+
+/**
+ * Swap places with an adjacent ally.
+ */
+const SWAP = new FehAssist("Swap", 1,
+    (unit, target) => {
+        let formerRow = unit.row;
+        let formerColumn = unit.column;;
+        unit.row = target.row;
+        unit.column = target.column;
+        target.row = formerRow;
+        target.column = formerColumn;
+    },
+    (unit, fromRow, fromColumn, target) => {
+        return unit.isTraversableTerrain(unit.battle.map.tiles[target.row][target.column]) &&
+            target.isTraversableTerrain(unit.battle.map.tiles[unit.row][unit.column]);
     }
 );
 
