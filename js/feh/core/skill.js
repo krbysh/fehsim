@@ -179,7 +179,7 @@ const DRAW_BACK = new FehAssist("Draw Back", 1,
 
         if (backRow < 0 || backCol < 0 || backCol >= 6 || backRow >= 8) return false;
 
-        let o = unit.battle.getHeroAt(backRow, backCol);
+        let o = unit.battle.getUnitAt(backRow, backCol);
         if (o == unit || o == target) o = null;
 
         return unit.isTraversableTerrain(unit.battle.map.tiles[backRow][backCol]) &&
@@ -202,7 +202,7 @@ const PIVOT = new FehAssist("Pivot", 1,
         let or = 2 * (target.row - r0) + r0;
         let oc = 2 * (target.column - c0) + c0;
         if (or < 0 || oc < 0 || oc >= 6 || or >= 8) return false;
-        let ou = unit.battle.getHeroAt(or, oc);
+        let ou = unit.battle.getUnitAt(or, oc);
         if (ou === unit) ou = null;
         return unit.isTraversableTerrain(unit.battle.map.tiles[or][oc]) && !ou;
     }
@@ -223,7 +223,7 @@ const REPOSITION = new FehAssist("Reposition", 1,
         let backRow = fromRow - target.row + fromRow;
         let backCol = fromColumn - target.column + fromColumn;
         if (backRow < 0 || backCol < 0 || backCol >= 6 || backRow >= 8) return false;
-        let o = unit.battle.getHeroAt(backRow, backCol);
+        let o = unit.battle.getUnitAt(backRow, backCol);
         return target.isTraversableTerrain(unit.battle.map.tiles[backRow][backCol]) && !o;
     }
 );
@@ -243,7 +243,7 @@ const SHOVE = new FehAssist("Shove", 1,
         let or = (target.row - r0) * 1 + target.row;
         let oc = (target.column - c0) * 1 + target.column;
         if (or < 0 || oc < 0 || oc >= 6 || or >= 8) return false;
-        let ou = unit.battle.getHeroAt(or, oc);
+        let ou = unit.battle.getUnitAt(or, oc);
         if (ou === unit) ou = null;
         return target.isTraversableTerrain(unit.battle.map.tiles[or][oc]) && !ou;
     }
@@ -264,19 +264,20 @@ const SMITE = new FehAssist("Smite", 1,
         let or = (target.row - r0) * 2 + target.row;
         let oc = (target.column - c0) * 2 + target.column;
         if (or < 0 || oc < 0 || oc >= 6 || or >= 8) return false;
-        let ou = unit.battle.getHeroAt(or, oc);
+        let ou = unit.battle.getUnitAt(or, oc);
         if (ou === unit) ou = null;
 
         if (!(target.isTraversableTerrain(unit.battle.map.tiles[or][oc]) && !ou)) return false;
 
         let mr = (target.row - r0) * 1 + target.row;
         let mc = (target.column - c0) * 1 + target.column;
+        let mu = unit.battle.getUnitAt(mu, mu);
         let terrain = unit.battle.map.tiles[mr][mc];
-        let isSmiteable =
+        let isSmiteable = !mu && (
             terrain == TERRAIN_PLAIN ||
             terrain == TERRAIN_MNTIN ||
             terrain == TERRAIN_TREES ||
-            terrain == TERRAIN_WATER;
+            terrain == TERRAIN_WATER);
 
         return isSmiteable;
     }

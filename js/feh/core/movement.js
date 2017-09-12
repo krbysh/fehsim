@@ -176,7 +176,7 @@ class FehActionQuery {
         searchSpace.forEach(row => row.forEach(node => {
             node.hasEnemyPresence = false;
             node.containsHero = false;
-            let heroAtTile = battle.getHeroAt(node.row, node.column);
+            let heroAtTile = battle.getUnitAt(node.row, node.column);
             if (heroAtTile && heroAtTile.playerKey != unit.playerKey)
                 node.hasEnemyPresence = true;
             if (heroAtTile) node.containsHero = true;
@@ -240,7 +240,7 @@ class FehActionQuery {
         let traversableTiles = searchSpace.reduce((a, b) => a.concat(b)).filter(n => n.g <= unit.maxSteps);
 
         let validMovementTiles = traversableTiles.filter(n => {
-            let at = battle.getHeroAt(n.row, n.column);
+            let at = battle.getUnitAt(n.row, n.column);
             if (at == unit) return true;
             if ((allyTilesAreValidMovementSpaces === true) && (at && at.playerKey == unit.playerKey)) return true;
             return !at;
@@ -251,7 +251,7 @@ class FehActionQuery {
         let tilesInAssistRange = validMovementTiles.map(n => n.getNeighbours(unit.assistRange)).reduce((a, b) => a.concat(b)).filter(n => !n.blocked);
 
         let validAttackTargetTiles = tilesInAttackRange.filter(n => {
-            let target = battle.getHeroAt(n.row, n.column);
+            let target = battle.getUnitAt(n.row, n.column);
             if (target == unit) return false;
 
             if (unit.attackRange == 1) {
@@ -270,7 +270,7 @@ class FehActionQuery {
 
         let validAssistTargetTiles = tilesInAssistRange.filter(n => {
 
-            let target = battle.getHeroAt(n.row, n.column);
+            let target = battle.getUnitAt(n.row, n.column);
             if (!target) return false;
             if (target.playerKey !== unit.playerKey) return false;
             if (target == unit) return false;

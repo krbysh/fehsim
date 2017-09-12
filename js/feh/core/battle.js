@@ -412,7 +412,7 @@ class FehBattle {
      * @param {Number} column 
      * @returns {FehUnit}
      */
-    getHeroAt(row, column) {
+    getUnitAt(row, column) {
         this.validateCoordinates(row, column);
         return this.heroes.find(heroe => heroe.row == row && heroe.column == column);
     }

@@ -316,7 +316,7 @@ class FehBattleGui extends FehBattleListener {
      */
     onTile(row, column) {
 
-        let unit = this.controller.battle.getHeroAt(row, column);
+        let unit = this.controller.battle.getUnitAt(row, column);
 
         if (this.state == GUISTATE_HOME) {
 
