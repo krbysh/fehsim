@@ -411,6 +411,9 @@ class FehBattleGui extends FehBattleListener {
                 this.selectedTarget.row === row &&
                 this.selectedTarget.column === column;
 
+            let attacking = this.selectedTarget && !this.controller.owns(this.selectedTarget);
+            let assisting = this.selectedTarget && this.controller.owns(this.selectedTarget);
+
             // DUPLICATED_CODE
             let emptyIrrelevantTile =
                 !unit &&
@@ -433,10 +436,10 @@ class FehBattleGui extends FehBattleListener {
                 this.selectedColumn === column;
 
             let targetIsAssistableOrAttackableFromTile =
-                targetNode.assistableFrom.indexOf(node) >= 0 ||
-                targetNode.attackableFrom.indexOf(node) >= 0;
+                (assisting && targetNode.assistableFrom.indexOf(node) >= 0) ||
+                (attacking && targetNode.attackableFrom.indexOf(node) >= 0);
 
-            // DUPLICATED_CODE
+            // DUPLICATED_CODE (cambiar de target)
             let unitInValidAssistOrAttackRange =
                 result.validAttackTargetTiles.indexOf(node) >= 0 ||
                 result.validAssistTargetTiles.indexOf(node) >= 0;
