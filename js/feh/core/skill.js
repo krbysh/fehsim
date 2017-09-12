@@ -271,7 +271,7 @@ const SMITE = new FehAssist("Smite", 1,
 
         let mr = (target.row - r0) * 1 + target.row;
         let mc = (target.column - c0) * 1 + target.column;
-        let mu = unit.battle.getUnitAt(mu, mu);
+        let mu = unit.battle.getUnitAt(mr, mc);
         let terrain = unit.battle.map.tiles[mr][mc];
         let isSmiteable = !mu && (
             terrain == TERRAIN_PLAIN ||
