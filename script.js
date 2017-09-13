@@ -3,30 +3,31 @@
 let map = new FehMap();
 
 map.tiles = [
-    [TERRAIN_BLOCK, TERRAIN_PLAIN, TERRAIN_PLAIN, TERRAIN_PLAIN, TERRAIN_PLAIN, TERRAIN_BLOCK],
-    [TERRAIN_BLOCK, TERRAIN_PLAIN, TERRAIN_PLAIN, TERRAIN_PLAIN, TERRAIN_PLAIN, TERRAIN_BLOCK],
-    [TERRAIN_PLAIN, TERRAIN_PLAIN, TERRAIN_PLAIN, TERRAIN_PLAIN, TERRAIN_PLAIN, TERRAIN_PLAIN],
-    [TERRAIN_PLAIN, TERRAIN_PLAIN, TERRAIN_BLOCK, TERRAIN_BLOCK, TERRAIN_PLAIN, TERRAIN_PLAIN],
-    [TERRAIN_PLAIN, TERRAIN_PLAIN, TERRAIN_PLAIN, TERRAIN_PLAIN, TERRAIN_WALL1, TERRAIN_BLOCK],
-    [TERRAIN_PLAIN, TERRAIN_PLAIN, TERRAIN_PLAIN, TERRAIN_PLAIN, TERRAIN_PLAIN, TERRAIN_PLAIN],
-    [TERRAIN_PLAIN, TERRAIN_BLOCK, TERRAIN_PLAIN, TERRAIN_PLAIN, TERRAIN_PLAIN, TERRAIN_PLAIN],
-    [TERRAIN_PLAIN, TERRAIN_BLOCK, TERRAIN_BLOCK, TERRAIN_BLOCK, TERRAIN_PLAIN, TERRAIN_PLAIN],
+    [TERRAIN______, TERRAIN______, TERRAIN_BLOCK, TERRAIN_BLOCK, TERRAIN__WW__, TERRAIN______],
+    [TERRAIN______, TERRAIN_BLOCK, TERRAIN_BLOCK, TERRAIN______, TERRAIN______, TERRAIN______],
+    [TERRAIN______, TERRAIN_BLOCK, TERRAIN______, TERRAIN______, TERRAIN______, TERRAIN______],
+    [TERRAIN______, TERRAIN______, TERRAIN______, TERRAIN__WW__, TERRAIN______, TERRAIN______],
+    [TERRAIN______, TERRAIN_BLOCK, TERRAIN______, TERRAIN______, TERRAIN______, TERRAIN______],
+    [TERRAIN______, TERRAIN_BLOCK, TERRAIN_BLOCK, TERRAIN______, TERRAIN______, TERRAIN______],
+    [TERRAIN______, TERRAIN______, TERRAIN_BLOCK, TERRAIN______, TERRAIN______, TERRAIN______],
+    [TERRAIN______, TERRAIN______, TERRAIN_BLOCK, TERRAIN__WW__, TERRAIN______, TERRAIN______],
+    [TERRAIN______, TERRAIN______, TERRAIN_BLOCK, TERRAIN__WW__, TERRAIN__WW__, TERRAIN__WW__],
 ]
 map.playerSpaces = [
-    [5, 4],
-    [5, 5],
-    [6, 3],
-    [6, 4],
+    [1, 0],
+    [2, 0],
+    [4, 0],
+    [5, 0],
 ];
 map.enemySpaces = [
-    [2, 0], // Green Cavalier
-    [2, 1], // Blue Mage
-    [3, 0], // Thief
-    [7, 0], // Sword Cavalier
-    [0, 2], // Ephraim
-    [0, 3], // Eirika
+    [3, 5], // Red Mage
+    [4, 5], // Lance Fighter
+    [2, 4], // Axe Fighter
+    [1, 4], // Blue Mage
+    [5, 3], // Axe Fighter
+    [5, 4], // Robin (F)
 ];
-map.backgroundImageUri = 'res/img/maps/T0016.png';
+map.backgroundImageUri = 'res/img/maps/T0001.png';
 map.backgroundPatternUri = 'res/img/maps/common/WavePattern.png';
 map.foregroundImageUri = 'res/img/maps/common/CloudAdd.png';
 
@@ -34,61 +35,48 @@ map.foregroundImageUri = 'res/img/maps/common/CloudAdd.png';
 
 // ENEMIES
 
-let greenCavalier = new FehUnit();
-greenCavalier.hero = new FehOverwriteHero(
-    "Green Cavalier",
-    WEAPON_AXE, MOVEMENT_CAVALRY,
-    46, 52 - GRONBLADE_PLUS.might, 28, 19, 38,
-    "res/img/heroes/84px-Map_Green_Cavalier.png"
-);
+let redMage = new FehUnit(new FehOverwriteHero(
+    "Red Mage", WEAPON_RED_TOME, MOVEMENT_INFANTRY,
+    52, 45 - RAUORRAVEN_PLUS.might, 35, 22, 31,
+    "res/img/heroes/Map_Red_Mage.png"
+));
 
-let blueMage = new FehUnit();
-blueMage.hero = new FehOverwriteHero(
-    "Blue Mage",
-    WEAPON_BLUE_TOME, MOVEMENT_INFANTRY,
-    52, 47 - BLARBLADE_PLUS.might, 35, 22, 31,
-    "res/img/heroes/84px-Map_Blue_Mage.png"
-);
+let lanceFighter = new FehUnit(new FehOverwriteHero(
+    "Lance Fighter", WEAPON_LANCE, MOVEMENT_INFANTRY,
+    61, 49 - SILVER_LANCE_PLUS.might, 34, 33, 25,
+    "res/img/heroes/Map_Lance_Fighter.png"
+));
 
-let thief = new FehUnit();
-thief.hero = new FehOverwriteHero(
-    "Thief",
-    WEAPON_DAGGER, MOVEMENT_INFANTRY,
-    50, 38 - ROGUE_DAGGER_PLUS.might, 42, 15, 35,
-    "res/img/heroes/84px-Map_Thief.png"
-);
+let axeFighter1 = new FehUnit(new FehOverwriteHero(
+    "Axe Fighter", WEAPON_AXE, MOVEMENT_INFANTRY,
+    61, 45 - KILLER_AXE_PLUS.might, 34, 33, 25,
+    "res/img/heroes/Map_Axe_Fighter.png"
+));
 
-let swordCavalier = new FehUnit();
-swordCavalier.hero = new FehOverwriteHero(
-    "Sword Cavalier",
-    WEAPON_SWORD, MOVEMENT_CAVALRY,
-    57, 53 - SILVER_SWORD_PLUS.might, 27, 28, 33,
-    "res/img/heroes/84px-Map_Sword_Cavalier.png"
-);
+let blueMage = new FehUnit(new FehOverwriteHero(
+    "Blue Mage", WEAPON_BLUE_TOME, MOVEMENT_INFANTRY,
+    52, 47 - THORON_PLUS.might, 35, 22, 31,
+    "res/img/heroes/Map_Blue_Mage.png"
+));
 
-let ephraim = new FehUnit();
-ephraim.hero = new FehOverwriteHero(
-    "Ephraim",
-    WEAPON_LANCE, MOVEMENT_INFANTRY,
-    73, 58 - SEIGMUND.might, 31, 38, 25,
-    "res/img/heroes/78px-Icon_Portrait_Ephraim.png"
-);
+let axeFighter2 = new FehUnit(new FehOverwriteHero(
+    "Axe Fighter", WEAPON_AXE, MOVEMENT_INFANTRY,
+    61, 45 - KILLER_AXE_PLUS.might, 34, 33, 25,
+    "res/img/heroes/Map_Axe_Fighter.png"
+));
 
-let eirika = new FehUnit();
-eirika.hero = new FehOverwriteHero(
-    "Eirika",
-    WEAPON_SWORD, MOVEMENT_INFANTRY,
-    67, 45 - SEIGLINDE.might, 39, 29, 31,
-    "res/img/heroes/78px-Icon_Portrait_Eirika.png"
-);
+let robin = new FehUnit(new FehOverwriteHero(
+    "Robin (F)", WEAPON_GREEN_TOME, MOVEMENT_INFANTRY,
+    64, 42 - GRONNWORLF_PLUS.might, 32, 32, 25
+));
 
 let enemyTeam = [];
-enemyTeam.push(greenCavalier);
+enemyTeam.push(redMage);
+enemyTeam.push(lanceFighter);
+enemyTeam.push(axeFighter1);
 enemyTeam.push(blueMage);
-enemyTeam.push(thief);
-enemyTeam.push(swordCavalier);
-enemyTeam.push(ephraim);
-enemyTeam.push(eirika);
+enemyTeam.push(axeFighter2);
+enemyTeam.push(robin);
 
 // ALLIES
 

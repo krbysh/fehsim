@@ -174,7 +174,11 @@ const MOVEMENT_INFANTRY = 'MOVEMENT_INFANTRY';
  */
 class FehUnit {
 
-    constructor() {
+    /**
+     * 
+     * @param {FehHero} hero 
+     */
+    constructor(hero = null) {
 
         /**
          * @type {FehBattle}
@@ -331,6 +335,8 @@ class FehUnit {
 
         this.update();
 
+        if (hero) this.hero = hero;
+
     }
 
     rebuild() {
@@ -439,13 +445,13 @@ class FehUnit {
             case MOVEMENT_INFANTRY:
                 if (forMovement) {
                     if (isAdjacent && terrainType === TERRAIN_TREES) return true;
-                    if (terrainType === TERRAIN_PLAIN) return true;
+                    if (terrainType === TERRAIN______) return true;
                 } else {
-                    if (terrainType === TERRAIN_PLAIN || terrainType === TERRAIN_TREES) return true;
+                    if (terrainType === TERRAIN______ || terrainType === TERRAIN_TREES) return true;
                 }
                 return false;
             case MOVEMENT_CAVALRY:
-                if (terrainType === TERRAIN_PLAIN) return true;
+                if (terrainType === TERRAIN______) return true;
                 return false;
             case MOVEMENT_FLIER:
                 if (terrainType !== TERRAIN_BLOCK) return true;
