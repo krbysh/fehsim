@@ -44,13 +44,13 @@ class FehTileGui {
         let frame = document.createElement('div')
         frame.className = 'tile-frame';
 
-        let wall = document.createElement('wall')
+        let wall = document.createElement('div')
         wall.className = 'tile-wall';
 
         let arrow = document.createElement('div')
         arrow.className = 'tile-arrow';
 
-        let danger = document.createElement('wall')
+        let danger = document.createElement('div')
         danger.className = 'tile-danger';
 
         this.visualElement.appendChild(background);
@@ -58,6 +58,7 @@ class FehTileGui {
         this.visualElement.appendChild(arrow);
         this.visualElement.appendChild(wall);
         this.visualElement.appendChild(danger);
+        
 
         this.clear();
     }

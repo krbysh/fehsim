@@ -1,7 +1,8 @@
-const GUISTATE_NULL = 'GUISTATE_NULL';
-const GUISTATE_SHOWING_RANGE = 'GUISTATE_SHOWING_RANGE';
-const GUISTATE_SHOWING_ACTIONS = 'GUISTATE_SHOWING_ACTIONS';
-const GUISTATE_SHOWINT_ACTION_PREVIEW = 'GUISTATE_SHOWINT_ACTION_PREVIEW';
+const GUISTATE_HOME = 'GUISTATE_HOME';
+const GUISTATE_SELECTED_UNIT = 'GUISTATE_SELECTED_UNIT';
+const GUISTATE_SELECTED_COORDINATES = 'GUISTATE_SELECTED_COORDINATES';
+const GUISTATE_SELECTED_TARGET = 'GUISTATE_SELECTED_TARGET';
+const GUISTATE_SWAP = 'GUISTATE_SWAP';
 
 class FehBattleGui extends FehBattleListener {
 
@@ -13,17 +14,34 @@ class FehBattleGui extends FehBattleListener {
      */
     constructor(gameElement, controller, guiHeroes) {
         super();
+
         this.aiStepFunction = null;
         this.rootElement = gameElement;
         this.controller = controller;
         this.guiHeroes = guiHeroes;
+
+        /**
+         * @type {FehUnit}
+         */
+        this.selectedUnit = null;
+
+        /**
+         * @type {FehMovementQueryResult}
+         */
+        this.queryResult = null;
+
+        /**
+         * @type {number}
+         */
+        this.lastOnTileEvent = new Date().getTime();
+
         this.rebuild();
     }
 
     rebuild() {
 
         let battle = this.controller.battle;
-        this.state = GUISTATE_NULL;
+        this.state = GUISTATE_HOME;
 
         // CLEAR
         this.rootElement.classList.add('game');
@@ -47,12 +65,13 @@ class FehBattleGui extends FehBattleListener {
         this.endTurnButton.onclick = () => {
 
             // CLEAR?
+            /*
             this.clearTiles();
             if (this.activeHero)
                 this.getGuiMapHeroForMapHero(this.activeHero).reset();
             this.state = GUISTATE_NULL;
             this.actionPreviewRow = null;
-            this.actionPreviewColumn = null;
+            this.actionPreviewColumn = null;/** */
 
             this.controller.endTurn();
         };
@@ -110,6 +129,10 @@ class FehBattleGui extends FehBattleListener {
             this.mapInput.appendChild(tile.inputElement);
             this.mapTiles.appendChild(tile.visualElement);
         }));
+        /**
+         * @type {FehTileGui[]}
+         */
+        this.guiTileSet = this.guiTiles.reduce((a, b) => a.concat(b));
 
         // BUILD MAP WALLS
         for (let row = 0; row < 8; row++) {
@@ -122,6 +145,10 @@ class FehBattleGui extends FehBattleListener {
             }
         }
 
+        this.dialogElement = document.createElement('div');
+        let dialogElementIcon = document.createElement('div');
+        this.dialogElement.appendChild(dialogElementIcon);
+        this.mapElement.appendChild(this.dialogElement);
     }
 
     onStart() {
@@ -139,7 +166,7 @@ class FehBattleGui extends FehBattleListener {
 
         heroes.forEach(hero => this.guiHeroes.push(new FehMapHeroGui(this, hero)));
 
-        this.guiHeroes.forEach(hero => this.mapHeroesElement.appendChild(hero.element))
+        this.guiHeroes.forEach(hero => this.mapHeroesElement.appendChild(hero.visualElement))
         this.guiHeroes.forEach(hero => hero.reset());
     }
 
@@ -149,6 +176,11 @@ class FehBattleGui extends FehBattleListener {
      * @param {Number} turn 
      */
     onPhase(phase, turn) {
+
+        this.selectedUnit = null;
+        this.selectedTarget = null;
+        this.selectedRow = -1;
+        this.selectedColumn = -1;
 
         if (phase !== PHASE_SWAP_SPACES) {
 
@@ -164,8 +196,8 @@ class FehBattleGui extends FehBattleListener {
             });
             this.rootElement.appendChild(msg);
 
-            // FIX para swap_spaces a medias
-            this.activeHero = null;
+            // STATE
+            this.state = GUISTATE_HOME;
 
         }
 
@@ -190,6 +222,19 @@ class FehBattleGui extends FehBattleListener {
         this.updateDangerZone();
 
         if (phase == PHASE_SWAP_SPACES) {
+
+            // CANCEL MOVEMENT ------------------------------------
+            /*
+            this.clearTiles();
+            if (this.activeHero)
+                this.getGuiMapHeroForMapHero(this.activeHero).reset();
+            this.state = GUISTATE_NULL;
+            this.actionPreviewRow = null;
+            this.actionPreviewColumn = null;/
+            */
+            // ----------------------------------------------------
+
+            this.state = GUISTATE_SWAP;
             this.clearTiles();
             this.enableSwapStyles();
         }
@@ -224,34 +269,49 @@ class FehBattleGui extends FehBattleListener {
      */
     onMove(hero, row, column) {
 
+        // QUEMADO DESPUES DE LA PRIMERA VEZ
+        this.swapSpacesButton.style.display = 'none';
+
         // ACTUALIZAR LA POSICIÓN
         this.getGuiMapHeroForMapHero(hero).reset();
 
         this.updateDangerZone();
 
         // PARCHE PARA LIMPIAR
-        if (this.state == GUISTATE_SHOWING_ACTIONS || this.state == GUISTATE_SHOWINT_ACTION_PREVIEW) {
-            this.clearTiles();
-            this.getGuiMapHeroForMapHero(this.activeHero).reset();
-            this.state = GUISTATE_NULL;
-            this.actionPreviewRow = null;
-            this.actionPreviewColumn = null;
-        }
+        if (this.state == GUISTATE_SELECTED_UNIT)
+            this.setSelectedUnit(null);
 
+        // QUIZAS ESTO DEBERIA IR EN OTRO LADO
+        this.onAfterAction();
+    }
+
+    /**
+     * 
+     * @param {FehUnit} unit 
+     * @param {FehUnit} target 
+     */
+    onAssist(unit, target) {
+        this.getGuiMapHeroForMapHero(unit).reset();
+        this.getGuiMapHeroForMapHero(target).reset();
+        this.setSelectedUnit(null);
+
+        // QUIZAS ESTO DEBERIA IR EN OTRO LADO
+        this.onAfterAction();
+    }
+
+    onAfterAction() {
         // AUTO-END-TURN
         let actionsLeft = this.controller.getTeam().filter(hero => !hero.isWaiting).length;
         if (actionsLeft == 0) {
             this.controller.endTurn();
             return;
         }
-
         // AI_STEP
         if (!this.controller.isPlayerPhase()) {
             setTimeout(() => {
                 this.aiStepFunction();
             }, 300);
         }
-
     }
 
     /**
@@ -261,130 +321,338 @@ class FehBattleGui extends FehBattleListener {
      */
     onTile(row, column) {
 
-        let hero = this.controller.battle.getHeroAt(row, column);
+        let t1 = new Date().getTime();
+        let t0 = this.lastOnTileEvent;
+        let t = t1 - t0;
+        this.lastOnTileEvent = t1;
+        let doubleTap = t < 200;
 
-        if (this.controller.battle.phase == PHASE_SWAP_SPACES) {
+        let unit = this.controller.battle.getUnitAt(row, column);
 
-            // CLEAN EVERYTHING
-            this.clearTiles();
+        if (this.state == GUISTATE_HOME) {
 
-            // SHOW RANGE OF CLICKED HEROES
-            if (hero) this.showRangeOf(hero);
+            if (unit && !unit.isWaiting && this.controller.owns(unit)) this.setSelectedUnit(unit);
+            if (unit && (unit.isWaiting || !this.controller.owns(unit))) this.showStatusOf(unit);
+            if (!unit) this.clearTiles();
 
-            // TURN ALLY TILES GREEN
-            this.enableSwapStyles();
+        } else if (this.state == GUISTATE_SWAP) {
 
-            // DID WE PICK OUR SECOND HERO TO SWAP? SWAP THEM!
-            if (this.activeHero && hero && !this.controller.isEnemy(hero)) {
-                let temp = this.activeHero;
-                this.activeHero = null;
-                this.controller.doAction(temp, null, null, hero);
-                return;
-            }
+            console.log('SWAPITY SWAP')
 
-            // DID WE PICK OUR FIRST HERO TO SWAP? SELECT IT!
-            if (this.activeHero == null && hero && !this.controller.isEnemy(hero))
-                this.activeHero = hero;
+            if (unit && this.controller.owns(unit) && this.selectedUnit) {
 
-            // DID WE TOUCH NOTHING? CANCEL FIRST HERO TO SWAP
-            if (hero == null)
-                this.activeHero = null;
-
-            // DO WE HAVE A HERO TO SWAP SELECTED?
-            if (this.activeHero) {
-
-                // SHOW ALLY TILES AS ACTIONABLE
-                this.controller.getTeam().forEach(ally => {
-                    let tile2 = this.getGuiTileWithHero(ally);
-                    tile2.clear();
-                    tile2.setActionable();
-                    tile2.showGreenFrame();
-                    tile2.turnGreen();
-                })
-
-                // SHOW FIRST HERO AS BLUE
-                let target = this.getGuiTileWithHero(this.activeHero);
-                target.showBlueFrame();
-                target.turnBlue();
-            }
-
-            return;
-        }
-
-        if (this.state == GUISTATE_SHOWING_ACTIONS || this.state == GUISTATE_SHOWINT_ACTION_PREVIEW) {
-
-            let node = this.queryResult.getNodeAt(row, column);
-            let isInAttackRange = this.queryResult.tilesInAttackRange.indexOf(node) >= 0;
-            let isInMovementRange = this.queryResult.validMovementTiles.indexOf(node) >= 0;
-
-            if (isInMovementRange) {
-
-                if (this.actionPreviewRow != row || this.actionPreviewColumn != column) {
-
-                    // clicked bright blue tile for the first time
-                    this.showActionPreview(this.activeHero, node.row, node.column, hero);
-                    this.actionPreviewRow = row;
-                    this.actionPreviewColumn = column;
-                    return;
-
-                } else {
-
-                    // clicked bright blue tile again
-                    this.controller.doAction(this.activeHero, row, column, null);
-                    this.actionPreviewRow = null;
-                    this.actionPreviewColumn = null;
-
-                    return;
-
-                }
-            }
-
-            if (!isInAttackRange && !isInMovementRange) {
-                // clicked empty tile
                 this.clearTiles();
-                this.getGuiMapHeroForMapHero(this.activeHero).reset();
-                this.state = GUISTATE_NULL;
-                this.actionPreviewRow = null;
-                this.actionPreviewColumn = null;
-                return;
+                this.enableSwapStyles();
+                this.controller.doAction(this.selectedUnit, null, null, unit);
+                this.selectedUnit = null;
+
+            } else if (unit && this.controller.owns(unit)) {
+
+                this.selectedUnit = unit;
+
+                this.showStatusOf(unit);
+                let srcTile = this.getGuiTileWithHero(unit);
+                srcTile.turnBlue();
+                srcTile.setActionable();
+                srcTile.showBlueFrame();
+                this.controller.getTeam().forEach(ally => {
+                    if (ally === unit) return;
+                    let dstTile = this.getGuiTileWithHero(ally);
+                    dstTile.turnGreen();
+                    dstTile.clearActionable();
+                    dstTile.showGreenFrame();
+                });
+
+            } else if (!unit) {
+
+                this.clearTiles();
+                this.enableSwapStyles();
+                this.selectedUnit = null;
             }
 
-            return;
+        } else if (this.state == GUISTATE_SELECTED_UNIT) {
+
+            let result = this.queryResult;
+            let node = result.getNodeAt(row, column);
+
+            // DUPLICATED_CODE
+            let emptyIrrelevantTile =
+                !unit &&
+                result.traversableTiles.indexOf(node) < 0 &&
+                result.tilesInAttackRange.indexOf(node) < 0 &&
+                result.tilesInAssistRange.indexOf(node) < 0;
+
+            // DUPLICATED_CODE
+            let originalSelectedTile =
+                this.selectedUnitRow0 === row &&
+                this.selectedUnitColumn0 === column;
+
+            let unitNotInValidAttackOrAssistTile =
+                unit &&
+                result.tilesInAttackRange.indexOf(node) < 0 &&
+                result.tilesInAssistRange.indexOf(node) < 0;
+
+            // DUPLICATED_CODE
+            let validMovementTile =
+                result.validMovementTiles.indexOf(node) >= 0;
+
+            let confirmationTile =
+                this.selectedRow === row &&
+                this.selectedColumn === column;
+
+            // DUPLICATED_CODE
+            let unitInValidAssistOrAttackRange =
+                result.validAttackTargetTiles.indexOf(node) >= 0 ||
+                result.validAssistTargetTiles.indexOf(node) >= 0;
+
+            if (emptyIrrelevantTile || originalSelectedTile && !doubleTap) this.setSelectedUnit(null);
+            else if (originalSelectedTile && doubleTap) this.controller.doAction(this.selectedUnit);
+            else if (unitInValidAssistOrAttackRange) this.setSelectedTarget(unit);
+            else if (confirmationTile) this.controller.doAction(this.selectedUnit, this.selectedRow, this.selectedColumn, null);
+            else if (unitNotInValidAttackOrAssistTile) this.showStatusOf(unit);
+            else if (validMovementTile) this.setSelectedPosition(row, column);
+
+        } else if (this.state == GUISTATE_SELECTED_TARGET) {
+
+            let result = this.queryResult;
+
+            let targetNode = result.getNodeAt(this.selectedTarget.row, this.selectedTarget.column);
+            let node = result.getNodeAt(row, column);
+
+            let actionConfirmationTile =
+                this.selectedTarget.row === row &&
+                this.selectedTarget.column === column;
+
+            let attacking = this.selectedTarget && !this.controller.owns(this.selectedTarget);
+            let assisting = this.selectedTarget && this.controller.owns(this.selectedTarget);
+
+            // DUPLICATED_CODE
+            let emptyIrrelevantTile =
+                !unit &&
+                result.traversableTiles.indexOf(node) < 0 &&
+                result.tilesInAttackRange.indexOf(node) < 0 &&
+                result.tilesInAssistRange.indexOf(node) < 0;
+
+            // DUPLICATED_CODE
+            let validMovementTile =
+                result.validMovementTiles.indexOf(node) >= 0;
+
+            // DUPLICATED_CODE
+            let originalSelectedTile =
+                this.selectedUnitRow0 === row &&
+                this.selectedUnitColumn0 === column;
+
+            // DUPLICATED CODE
+            let confirmationTile =
+                this.selectedRow === row &&
+                this.selectedColumn === column;
+
+            let targetIsAssistableOrAttackableFromTile =
+                (assisting && targetNode.assistableFrom.indexOf(node) >= 0) ||
+                (attacking && targetNode.attackableFrom.indexOf(node) >= 0);
+
+            // DUPLICATED_CODE (cambiar de target)
+            let unitInValidAssistOrAttackRange =
+                result.validAttackTargetTiles.indexOf(node) >= 0 ||
+                result.validAssistTargetTiles.indexOf(node) >= 0;
+
+            if (emptyIrrelevantTile) this.setSelectedUnit(null);
+            else if (confirmationTile) this.setSelectedTarget(null);
+            else if (actionConfirmationTile) this.controller.doAction(this.selectedUnit, this.selectedRow, this.selectedColumn, this.selectedTarget);
+            else if (unitInValidAssistOrAttackRange) this.setSelectedTarget(unit);
+            else if (targetIsAssistableOrAttackableFromTile) this.setSelectedPosition(row, column);
+            else if (validMovementTile) {
+                this.setSelectedTarget(null);
+                this.setSelectedPosition(row, column);
+            }
+
         }
 
-        if (hero) {
+    }
 
-            if (this.state == GUISTATE_NULL || this.state == GUISTATE_SHOWING_RANGE) {
+    /**
+     * Actualiza el panel de estado de unidad y si el estado de la interfáz es GUISTATE_HOME muestra su rango de acción.
+     * @param {FehUnit} unit 
+     */
+    showStatusOf(unit) {
+        if (this.state == GUISTATE_HOME || this.state == GUISTATE_SWAP) {
+            let result = this.controller.battle.getRangeOf(unit, true);
+            this.clearTileColors();
+            this.clearTileActionables();
+            result.tilesInAttackRange.forEach(node => this.guiTiles[node.row][node.column].turnRed());
+            result.traversableTiles.forEach(node => this.guiTiles[node.row][node.column].turnBlue());
+        }
+    }
 
-                if (this.controller.owns(hero) && !hero.isWaiting) {
-                    this.activeHero = hero;
-                    this.state = GUISTATE_SHOWING_ACTIONS;
-                    this.showActionsOf(hero);
-                    return;
-                }
+    /**
+     * Muestra los movimientos posibles de la unidad seleccionada.
+     * Si unit es null, limpia la interfáz.
+     * @param {FehUnit} unit 
+     */
+    setSelectedUnit(unit) {
 
-                if (this.controller.isEnemy(hero) || (this.controller.owns(hero) && hero.isWaiting)) {
-                    this.activeHero = hero;
-                    this.state = GUISTATE_SHOWING_RANGE;
-                    this.showRangeOf(hero);
-                    return;
-                }
+        if (unit) {
 
-            }
+            this.selectedUnit = unit;
+            this.selectedUnitRow0 = this.selectedUnit.row;
+            this.selectedUnitColumn0 = this.selectedUnit.column;
+            this.selectedRow = this.selectedUnitRow0;
+            this.selectedColumn = this.selectedUnitColumn0;
+            this.showStatusOf(this.selectedUnit);
+
+            let result = this.controller.battle.getRangeOf(this.selectedUnit, false);
+            this.clearTileColors();
+            this.clearTileFrames();
+            this.clearTileActionables();
+            this.getGuiTileWithHero(this.selectedUnit).showBlueFrame();
+            result.tilesInAttackRange.forEach(node => this.guiTiles[node.row][node.column].turnRed());
+            result.traversableTiles.forEach(node => this.guiTiles[node.row][node.column].turnBlue());
+            result.validMovementTiles.forEach(node => {
+                let tile = this.guiTiles[node.row][node.column];
+                tile.turnBlue();
+                tile.setActionable();
+            });
+            result.validAttackTargetTiles.forEach(node => {
+                let tile = this.guiTiles[node.row][node.column];
+                tile.turnRed();
+                tile.setActionable();
+            });
+            result.validAssistTargetTiles.forEach(node => {
+                let tile = this.guiTiles[node.row][node.column];
+                tile.turnGreen();
+                tile.setActionable();
+            });
+            this.queryResult = result;
+
+            this.state = GUISTATE_SELECTED_UNIT;
 
         } else {
 
-            if (this.state == GUISTATE_SHOWING_RANGE) {
-                this.state = GUISTATE_NULL;
-                this.clearTiles();
-                return;
+            if (this.selectedTarget) this.setSelectedTarget(null);
+            if (this.selectedUnit) this.getGuiMapHeroForMapHero(this.selectedUnit).reset();
+            this.clearTiles();
+            this.selectedUnit = null;
+            this.selectedTarget = null;
+            this.state = GUISTATE_HOME;
+
+        }
+    }
+
+    /**
+     * 
+     * @param {number} row 
+     * @param {number} column 
+     */
+    setSelectedPosition(row, column) {
+
+        if (this.state !== GUISTATE_SELECTED_UNIT && this.state !== GUISTATE_SELECTED_TARGET)
+            throw new FehException(EX_WRONG_TIMING, "Bad timing, you can't set the selected position at this time");
+
+        this.selectedRow = row;
+        this.selectedColumn = column;
+
+        let endNode = this.queryResult.getNodeAt(row, column);
+
+        // MOVEMENT ACTION PREVIEW
+        if (this.queryResult.validMovementTiles.indexOf(endNode) >= 0) {
+
+            this.clearTileArrows();
+            this.clearTileFrames();
+            this.getGuiTile(row, column).showBlueFrame();
+            this.getGuiMapHeroForMapHero(this.selectedUnit).setPosition(row, column);
+
+            if (this.selectedTarget) {
+                let tile = this.getGuiTileWithHero(this.selectedTarget);
+                tile.setActionable();
+                if (this.controller.owns(this.selectedTarget)) tile.showGreenFrame();
+                else tile.showRedFrame();
             }
 
-            if (this.state == GUISTATE_SHOWING_ACTIONS) {
-                this.state = GUISTATE_NULL;
-                this.clearTiles();
-                return;
+            // ARROWS
+            let toNode = null;
+            let currentNode = endNode;
+            while (currentNode != null) {
+
+                let fromNode = currentNode.from;
+
+                let fromTile = fromNode ? this.getGuiTile(fromNode.row, fromNode.column) : null;
+                let currentTile = this.getGuiTile(currentNode.row, currentNode.column);
+                let toTile = toNode ? this.getGuiTile(toNode.row, toNode.column) : null;
+
+                currentTile.setArrow(fromTile, toTile);
+
+                toNode = currentNode;
+                currentNode = fromNode;
             }
+        }
+
+    }
+
+    /**
+     * 
+     * @param {FehUnit} target 
+     */
+    setSelectedTarget(target) {
+
+        if (this.state !== GUISTATE_SELECTED_UNIT && this.state !== GUISTATE_SELECTED_TARGET)
+            throw new FehException(EX_WRONG_TIMING, "Bad timing, you can't set the selected target at this time");
+
+        this.selectedTarget = target;
+
+        if (this.selectedTarget) {
+
+            this.guiTileSet.forEach(tile => {
+                tile.clearActionable();
+                tile.clearFrame();
+            });
+
+            this.clearDialog();
+
+            let selectedNode = this.queryResult.getNodeAt(this.selectedRow, this.selectedColumn);
+            let targetNode = this.queryResult.getNodeAt(target.row, target.column);
+
+            let targetTile = this.getGuiTileWithHero(this.selectedTarget);
+            if (this.controller.owns(this.selectedTarget)) {
+                targetNode.assistableFrom.forEach(m => {
+                    let tile = this.getGuiTile(m.row, m.column);
+                    tile.setActionable();
+                });
+                if (targetNode.assistableFrom.indexOf(selectedNode) < 0) {
+                    let closestNode = targetNode.assistableFrom.sort((a, b) => selectedNode.getManhathanDistanceTo(a) - selectedNode.getManhathanDistanceTo(b))[0];
+                    this.setSelectedPosition(closestNode.row, closestNode.column);
+                }
+                targetTile.showGreenFrame();
+                targetTile.setActionable();
+                this.showAssistDialog(this.selectedTarget.row, this.selectedTarget.column);
+            } else {
+                targetNode.attackableFrom.forEach(m => {
+                    let tile = this.getGuiTile(m.row, m.column);
+                    tile.setActionable();
+                });
+                if (targetNode.attackableFrom.indexOf(selectedNode) < 0) {
+                    let closestNode = targetNode.attackableFrom.sort((a, b) => selectedNode.getManhathanDistanceTo(a) - selectedNode.getManhathanDistanceTo(b))[0];
+                    this.setSelectedPosition(closestNode.row, closestNode.column);
+                }
+                targetTile.showRedFrame();
+                targetTile.setActionable();
+                this.showAttackDialog(this.selectedTarget.row, this.selectedTarget.column);
+            }
+
+            let selectedUnitTile = this.getGuiTile(this.selectedRow, this.selectedColumn);
+            selectedUnitTile.setActionable();
+            selectedUnitTile.showBlueFrame();
+
+            this.state = GUISTATE_SELECTED_TARGET;
+
+        } else {
+
+            this.clearDialog();
+
+            this.queryResult.validMovementTiles.forEach(node => {
+                let tile = this.getGuiTile(node.row, node.column);
+                tile.setActionable();
+            });
+            this.state = GUISTATE_SELECTED_UNIT;
 
         }
 
@@ -401,97 +669,6 @@ class FehBattleGui extends FehBattleListener {
                 this.guiTiles[node.row][node.column].setDanger();
             });
         });
-
-    }
-
-    /**
-     * 
-     * @param {FehUnit} hero 
-     */
-    showRangeOf(hero) {
-        console.log('BattleGui::showRangeOf(FehMapHero)');
-        let result = this.controller.battle.getRangeOf(hero, true);
-        this.clearTileColors();
-        this.clearTileActionables();
-        result.tilesInAttackRange.forEach(node => this.guiTiles[node.row][node.column].turnRed());
-        result.traversableTiles.forEach(node => this.guiTiles[node.row][node.column].turnBlue());
-    }
-
-    /**
-     * 
-     * @param {FehUnit} hero 
-     */
-    showActionsOf(hero) {
-        console.log('BattleGui::showActionsOf(FehMapHero)');
-        let result = this.controller.battle.getRangeOf(hero, false);
-        this.clearTileColors();
-        this.clearTileFrames();
-        this.clearTileActionables();
-        this.getGuiTileWithHero(this.activeHero).showBlueFrame();
-        result.tilesInAttackRange.forEach(node => this.guiTiles[node.row][node.column].turnRed());
-        result.traversableTiles.forEach(node => this.guiTiles[node.row][node.column].turnBlue());
-        result.validMovementTiles.forEach(node => {
-            let tile = this.guiTiles[node.row][node.column];
-            tile.turnBlue();
-            tile.setActionable();
-        });
-        result.validAttackTargetTiles.forEach(node => {
-            let tile = this.guiTiles[node.row][node.column];
-            tile.turnRed();
-            tile.setActionable();
-        });
-        result.validAssistTargetTiles.forEach(node => {
-            let tile = this.guiTiles[node.row][node.column];
-            tile.turnGreen();
-            tile.setActionable();
-        });
-        this.queryResult = result;
-    }
-
-    /**
-     * 
-     * @param {FehUnit} hero 
-     * @param {Number} row 
-     * @param {Number} column 
-     * @param {FehUnit} target
-     */
-    showActionPreview(hero, row, column, target) {
-
-        console.log('BattleGui::showActionPreview(FehMapHero, Number, Number, FehMapHero)');
-
-        let endNode = this.queryResult.getNodeAt(row, column);
-
-        // MOVEMENT ACTION PREVIEW
-        if (this.queryResult.validMovementTiles.indexOf(endNode) >= 0) {
-
-            // ARROWS
-            this.clearTileArrows();
-            let toNode = null;
-            let currentNode = endNode;
-            while (currentNode != null) {
-
-                let fromNode = currentNode.from;
-
-                let fromTile = fromNode ? this.getGuiTile(fromNode.row, fromNode.column) : null;
-                let currentTile = this.getGuiTile(currentNode.row, currentNode.column);
-                let toTile = toNode ? this.getGuiTile(toNode.row, toNode.column) : null;
-
-                currentTile.setArrow(fromTile, toTile);
-
-                toNode = currentNode;
-                currentNode = fromNode;
-            }
-
-            // FRAME
-            this.clearTileFrames();
-            let guiTile = this.getGuiTile(row, column);
-            guiTile.showBlueFrame();
-
-            // HERO
-            let guiHero = this.getGuiMapHeroForMapHero(hero);
-            guiHero.setPosition(row, column);
-
-        }
 
     }
 
@@ -580,5 +757,40 @@ class FehBattleGui extends FehBattleListener {
         }
         return tiles;
     }
+
+    clearDialog() {
+        this.dialogElement.className = '';
+    }
+
+    showAttackDialog(row, col) {
+        this.dialogElement.classList.add('attack');
+        this.dialogElement.classList.add('dialog');
+        this.temp1(row, col);
+    }
+
+    showAssistDialog(row, col) {
+        this.dialogElement.classList.add('assist');
+        this.dialogElement.classList.add('dialog');
+        this.temp1(row, col);
+    }
+
+    temp1(row, col) {
+        if (row == 0 && col <= 2) {
+            this.dialogElement.classList.add('top-left');
+            this.dialogElement.style.right = "auto";
+            this.dialogElement.style.left = "calc(var(--tile-size) * (1 + " + col + "))";
+            this.dialogElement.style.top = "calc(var(--tile-size) * " + row + " - 53px + var(--tile-size) * 0.5)";
+        } else if (row == 0 && col >= 3) {
+            this.dialogElement.classList.add('top-right');
+            this.dialogElement.style.left = "auto";
+            this.dialogElement.style.right = "calc(var(--tile-size) * (6 - " + col + "))";
+            this.dialogElement.style.top = "calc(var(--tile-size) * " + row + " - 53px + var(--tile-size) * 0.5)";
+        } else {
+            this.dialogElement.style.right = "auto";
+            this.dialogElement.style.left = "calc(var(--tile-size) * " + col + " - 120px + var(--tile-size) / 2)";
+            this.dialogElement.style.top = "calc(var(--tile-size) * " + row + " - 120px + var(--tile-size) / 2 + 60px)";
+        }
+    }
+
 
 }

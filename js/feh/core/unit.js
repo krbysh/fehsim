@@ -3,53 +3,118 @@
  * @module Units
  * */
 
-class FehUnitModifier {
+class FehHero {
+
+    /**
+     * 
+     * @param {string} name 
+     * @param {string} weaponType 
+     * @param {string} movementType 
+     */
+    constructor(name, weaponType, movementType) {
+
+        /**
+         * @type {String}
+         */
+        this.name = name;
+
+        /**
+         * @type {String}
+         */
+        this.weaponType = weaponType;
+
+        /**
+         * @type {String}
+         */
+        this.movementType = movementType;
+
+        /**
+         * @type {String}
+         */
+        this.sprite = "res/img/heroes/Icon_Portrait_" + name.replace(/\s/g, "_") + ".png";
+    }
 
     /**
      * 
      * @param {FehUnit} unit 
      */
-    apply(unit) {
+    onBuild(unit) {
+
     }
 }
 
-/**
- * Ni idea
- * */
-class FehOverwriteModifier extends FehUnitModifier {
+class FehOverwriteHero extends FehHero {
 
-    /**
-     * @param {string} name 
-     * @param {string} sprite 
-     * @param {string} weaponType
-     * @param {string} movementType
-     * @param {number} hp 
-     * @param {number} atk 
-     * @param {number} spd 
-     * @param {number} def 
-     * @param {number} res 
-     */
-    constructor(name, sprite, weaponType, movementType, hp, atk, spd, def, res) {
-        super();
-        this.name = name;
-        this.sprite = sprite;
-        this.weaponType = weaponType;
-        this.movementType = movementType;
-        this.assistRange = 1;
+    constructor(name, weaponType, movementType, hp, atk, spd, def, res, sprite) {
+        super(name, weaponType, movementType);
         this.hp = hp;
         this.atk = atk;
         this.spd = spd;
         this.def = def;
         this.res = res;
-        switch (this.movementType) {
-            case MOVEMENT_ARMOR:
-                this.maxSteps = 1; break;
-            case MOVEMENT_INFANTRY:
-            case MOVEMENT_FLIER:
-                this.maxSteps = 2; break;
-            case MOVEMENT_CAVALRY:
-                this.maxSteps = 3; break;
-        }
+        if (sprite) this.sprite = sprite;
+    }
+
+    /**
+     * 
+     * @param {FehUnit} unit 
+     */
+    onBuild(unit) {
+        let modifier = new FehUnitModifier();
+        modifier.apply =
+            (/** @type {FehUnit} */ unit) => {
+                unit.maxHp = this.hp;
+                unit.atk = this.atk;
+                unit.spd = this.spd;
+                unit.def = this.def;
+                unit.res = this.res;
+                unit.weaponType = this.weaponType;
+                unit.movementType = this.movementType;
+                unit.maxSteps = 0;
+                switch (this.movementType) {
+                    case MOVEMENT_CAVALRY:
+                        unit.maxSteps++;
+                    case MOVEMENT_FLIER:
+                    case MOVEMENT_INFANTRY:
+                        unit.maxSteps++;
+                    case MOVEMENT_ARMOR:
+                        unit.maxSteps++;
+                }
+                unit.sprite = this.sprite;
+                unit.name = this.name;
+            };
+        unit.addModifier(modifier);
+    }
+
+}
+
+/**
+ * 
+ */
+class FehUnitModifier {
+
+    constructor() {
+        /**
+         * @type {function(FehUnit)}
+         */
+        this.apply = unit => { };
+    }
+}
+
+/**
+ * 
+ */
+class FehStatModifier extends FehUnitModifier {
+
+
+    constructor() {
+        super();
+        this.hp = 0;
+        this.atk = 0;
+        this.spd = 0;
+        this.def = 0;
+        this.res = 0;
+        this.maxCoolCount = 0;
     }
 
     /**
@@ -57,17 +122,12 @@ class FehOverwriteModifier extends FehUnitModifier {
      * @param {FehUnit} unit 
      */
     apply(unit) {
-        unit.name = this.name;
-        unit.sprite = this.sprite;
-        unit.weaponType = this.weaponType;
-        unit.assistRange = this.assistRange;
-        unit.movementType = this.movementType;
-        unit.maxSteps = this.maxSteps;
-        unit.hp = this.hp;
-        unit.atk = this.atk;
-        unit.spd = this.spd;
-        unit.def = this.def;
-        unit.res = this.res;
+        unit.maxHp += this.hp;
+        unit.atk += this.atk;
+        unit.spd += this.spd;
+        unit.def += this.def;
+        unit.res += this.res;
+        unit.maxCoolCount += this.maxCoolCount;
     }
 }
 
@@ -92,6 +152,8 @@ class FehWeaponModifier extends FehUnitModifier {
     }
 }
 
+/** ============== */
+
 const WEAPON_SWORD = 'WEAPON_SWORD';
 const WEAPON_LANCE = 'WEAPON_LANCE';
 const WEAPON_AXE = 'WEAPON_AXE';
@@ -113,6 +175,16 @@ const MOVEMENT_INFANTRY = 'MOVEMENT_INFANTRY';
 class FehUnit {
 
     constructor() {
+
+        /**
+         * @type {FehBattle}
+         */
+        this.battle = null;
+
+        /**
+         * @type {FehHero}
+         */
+        this.hero = null;
 
         /**
          * 
@@ -178,14 +250,24 @@ class FehUnit {
         this.teamIndex = 1;
 
         /**
-         * @type {FehMapHeroModifier[]}
+         * @type {FehUnitModifier[]}
          */
         this.modifiers = [];
 
         /**
          * @type {number}
          */
+        this.maxCoolCount = 0;
+
+        /**
+         * @type {number}
+         */
         this.hp = 0;
+
+        /**
+         * @type {number}
+         */
+        this.maxHp = 0;
 
         /**
          * @type {number}
@@ -208,34 +290,63 @@ class FehUnit {
         this.res;
 
         /**
-         * @type {Skill}
+         * @type {FehWeapon}
          */
         this.weapon = null;
+
         /**
-         * @type {Skill}
+         * @type {FehAssist}
+         */
+        this.assist = null;
+
+        /**
+         * @type {FehSkill}
          */
         this.special = null;
+
         /**
-         * @type {Skill}
+         * @type {FehSkill}
          */
         this.passiveA = null;
+
         /**
-         * @type {Skill}
+         * @type {FehSkill}
          */
         this.passiveB = null;
+
         /**
-         * @type {Skill}
+         * @type {FehSkill}
          */
         this.passiveC = null;
+
         /**
-         * @type {Skill}
+         * @type {FehSkill}
          */
         this.sacredSeal = null;
 
-        this.reset();
+        /**
+         * @type {FehSkill[]}
+         */
+        this.skills = [];
+
+        this.update();
+
     }
 
-    reset() {
+    rebuild() {
+        this.modifiers = [];
+        if (this.hero) this.skills.push(this.hero);
+        if (this.weapon) this.skills.push(this.weapon);
+        if (this.assist) this.skills.push(this.assist);
+        if (this.special) this.skills.push(this.special);
+        if (this.passiveA) this.skills.push(this.passiveA);
+        if (this.passiveB) this.skills.push(this.passiveB);
+        if (this.passiveC) this.skills.push(this.passiveC);
+        if (this.sacredSeal) this.skills.push(this.sacredSeal);
+        this.skills.forEach(skill => skill.onBuild(this));
+    }
+
+    update() {
 
         this.isWaiting = false;
 
@@ -263,11 +374,85 @@ class FehUnit {
 
     /**
      * 
-     * @param {FehMapHeroModifier} modifier 
+     * @param {FehSkill} skill 
+     */
+    equip(skill) {
+        if (!skill || !(skill instanceof FehSkill)) throw new FehException(EX_INVALID_TYPE, "'" + skill + "' is not a valid FehSkill and cannot be equiped");
+        switch (skill.type) {
+            case SKILL_WEAPON: this.weapon = skill; break;
+            case SKILL_ASSIST: this.assist = skill; break;
+            case SKILL_SPECIAL: this.special = skill; break;
+            case SKILL_PASSIVE_A: this.passiveA = skill; break;
+            case SKILL_PASSIVE_B: this.passiveB = skill; break;
+            case SKILL_PASSIVE_C: this.passiveC = skill; break;
+            case SKILL_SACRED_SEAL: this.sacredSeal = skill; break;
+        }
+    }
+
+    /**
+     * 
+     * @param {number} row 
+     * @param {number} column 
+     * @param {FehUnit} target 
+     */
+    isValidAssistTarget(row, column, target) {
+        if (!this.assist) return false;
+        if (!target) return false;
+        return this.assist.isAssistable(this, row, column, target);
+    }
+
+    /**
+     * 
+     * @param {FehUnitModifier} modifier 
      */
     addModifier(modifier) {
         this.modifiers.push(modifier);
-        this.reset();
+        this.update();
+    }
+
+    /**
+     * 
+     * @param {number} hp 
+     */
+    heal(hp) {
+        this.hp += hp;
+        this.fixHp();
+    }
+
+    /**
+     * 
+     */
+    fixHp() {
+        if (this.hp < 1) this.hp = 1;
+        if (this.hp > this.maxHp) this.hp = this.maxHp;
+    }
+
+    /**
+     * 
+     * @param {string} terrainType 
+     * @param {boolean} forMovement 
+     * @param {boolean} isAdjacent 
+     */
+    isTraversableTerrain(terrainType, forMovement, isAdjacent) {
+        switch (this.movementType) {
+            case MOVEMENT_ARMOR:
+            case MOVEMENT_INFANTRY:
+                if (forMovement) {
+                    if (isAdjacent && terrainType === TERRAIN_TREES) return true;
+                    if (terrainType === TERRAIN_PLAIN) return true;
+                } else {
+                    if (terrainType === TERRAIN_PLAIN || terrainType === TERRAIN_TREES) return true;
+                }
+                return false;
+            case MOVEMENT_CAVALRY:
+                if (terrainType === TERRAIN_PLAIN) return true;
+                return false;
+            case MOVEMENT_FLIER:
+                if (terrainType !== TERRAIN_BLOCK) return true;
+                return false;
+            default:
+                return false;
+        }
     }
 
     onAttackStart() {

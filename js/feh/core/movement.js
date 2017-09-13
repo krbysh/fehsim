@@ -31,6 +31,16 @@ class FehMovementQueryNode {
         this.hasEnemyPresence = hasEnemyPresence;
         this.containsHero = containsHero;
         this.blocked = false;
+
+        /**
+         * @type {FehMovementQueryNode[]}
+         */
+        this.assistableFrom = [];
+
+        /**
+         * @type {FehMovementQueryNode[]}
+         */
+        this.attackableFrom = [];
     }
 
     /**
@@ -61,6 +71,15 @@ class FehMovementQueryNode {
 
     toString() {
         return this.row + ", " + this.column
+    }
+
+    /**
+     * 
+     * @param {FehMovementQueryNode} node 
+     */
+    getManhathanDistanceTo(node) {
+        let manhattanDistance = Math.abs(node.row - this.row) + Math.abs(node.column - this.column);
+        return manhattanDistance;
     }
 }
 
@@ -132,34 +151,21 @@ class FehActionQuery {
 
     /**
      * @param {FehBattle} battle
-     * @param {FehUnit} hero 
+     * @param {FehUnit} unit 
      * @param {Boolean} allyTilesAreValidMovementSpaces
      * @returns {FehMovementQueryResult}
      */
-    movementQuery(battle, hero, allyTilesAreValidMovementSpaces = false) {
+    movementQuery(battle, unit, allyTilesAreValidMovementSpaces = false) {
 
         let searchSpace = this.buildSearchSpace();
-        let start = searchSpace[hero.row][hero.column];
+        let start = searchSpace[unit.row][unit.column];
 
         // update untraversable terrain flag
         searchSpace.forEach(row => row.forEach(node => {
 
             let terrain = battle.map.tiles[node.row][node.column];
-            let u = false;
-            switch (hero.movementType) {
-                case MOVEMENT_ARMOR:
-                case MOVEMENT_INFANTRY:
-                    if (node !== start && terrain === TERRAIN_TREES) u = true;
-                    if (terrain !== TERRAIN_PLAIN) u = true;
-                    break;
-                case MOVEMENT_CAVALRY:
-                    if (terrain !== TERRAIN_PLAIN) u = true;
-                    break;
-                case MOVEMENT_FLIER:
-                    if (terrain == TERRAIN_BLOCK) u = true;
-                    break;
-            }
-            node.untraversableTerrain = u;
+
+            node.untraversableTerrain = !unit.isTraversableTerrain(terrain, true, node !== start);
 
             if (terrain == TERRAIN_BLOCK || terrain == TERRAIN_WALL1)
                 node.blocked = true;
@@ -170,8 +176,8 @@ class FehActionQuery {
         searchSpace.forEach(row => row.forEach(node => {
             node.hasEnemyPresence = false;
             node.containsHero = false;
-            let heroAtTile = battle.getHeroAt(node.row, node.column);
-            if (heroAtTile && heroAtTile.playerKey != hero.playerKey)
+            let heroAtTile = battle.getUnitAt(node.row, node.column);
+            if (heroAtTile && heroAtTile.playerKey != unit.playerKey)
                 node.hasEnemyPresence = true;
             if (heroAtTile) node.containsHero = true;
         }));
@@ -212,7 +218,7 @@ class FehActionQuery {
                 let g0 = n.g; // current neighbour g score
 
                 // ignore unreachable neighbours
-                if (g > hero.maxSteps)
+                if (g > unit.maxSteps)
                     return;
 
                 // this is not a better path
@@ -231,24 +237,52 @@ class FehActionQuery {
 
         }
 
-        let traversableTiles = searchSpace.reduce((a, b) => a.concat(b)).filter(n => n.g <= hero.maxSteps);
+        let traversableTiles = searchSpace.reduce((a, b) => a.concat(b)).filter(n => n.g <= unit.maxSteps);
+
         let validMovementTiles = traversableTiles.filter(n => {
-            let at = battle.getHeroAt(n.row, n.column);
-            if (at == hero) return true;
-            if ((allyTilesAreValidMovementSpaces === true) && (at && at.playerKey == hero.playerKey)) return true;
+            let at = battle.getUnitAt(n.row, n.column);
+            if (at == unit) return true;
+            if ((allyTilesAreValidMovementSpaces === true) && (at && at.playerKey == unit.playerKey)) return true;
             return !at;
         });
-        let tilesInAttackRange = validMovementTiles.map(n => n.getNeighbours(hero.attackRange)).reduce((a, b) => a.concat(b)).filter(n => !n.blocked);
-        let tilesInAssistRange = validMovementTiles.map(n => n.getNeighbours(hero.assistRange)).reduce((a, b) => a.concat(b)).filter(n => !n.blocked);
+
+        let tilesInAttackRange = validMovementTiles.map(n => n.getNeighbours(unit.attackRange)).reduce((a, b) => a.concat(b)).filter(n => !n.blocked);
+
+        let tilesInAssistRange = validMovementTiles.map(n => n.getNeighbours(unit.assistRange)).reduce((a, b) => a.concat(b)).filter(n => !n.blocked);
+
         let validAttackTargetTiles = tilesInAttackRange.filter(n => {
-            let target = battle.getHeroAt(n.row, n.column);
-            if (target == hero) return false;
-            return target && battle.areEnemies(hero, target);
+            let target = battle.getUnitAt(n.row, n.column);
+            if (target == unit) return false;
+
+            if (unit.attackRange == 1) {
+                n.attackableFrom = n
+                    .getNeighbours(1)
+                    .filter(m => validMovementTiles.indexOf(m) >= 0);
+            } else if (unit.attackRange == 2) {
+                n.attackableFrom = n
+                    .getNeighbours(2)
+                    .filter(m => n.neighbours.indexOf(m) < 0)
+                    .filter(m => validMovementTiles.indexOf(m) >= 0);
+            } else throw new FehException(EX_BAD_PARAM, 'Rango de ataque tres o que!?')
+
+            return target && battle.areEnemies(unit, target);
         });
+
         let validAssistTargetTiles = tilesInAssistRange.filter(n => {
-            let target = battle.getHeroAt(n.row, n.column);
-            if (target == hero) return false;
-            return target && !battle.areEnemies(hero, target);
+
+            let target = battle.getUnitAt(n.row, n.column);
+            if (!target) return false;
+            if (target.playerKey !== unit.playerKey) return false;
+            if (target == unit) return false;
+
+            n.assistableFrom = n
+                .getNeighbours(unit.assistRange)
+                .filter(m => validMovementTiles.indexOf(m) >= 0)
+                .filter(m => unit.isValidAssistTarget(m.row, m.column, target)
+                );
+
+            return n.assistableFrom.length > 0;
+
         });
 
         return new FehMovementQueryResult(traversableTiles, validMovementTiles, tilesInAttackRange, tilesInAssistRange, validAttackTargetTiles, validAssistTargetTiles);
