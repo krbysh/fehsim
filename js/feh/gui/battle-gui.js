@@ -140,7 +140,7 @@ class FehBattleGui extends FehBattleListener {
                 let tileGui = this.guiTiles[row][column];
                 let tile = this.controller.battle.map.tiles[row][column];
                 if (tile == TERRAIN_BLOCK || tile == TERRAIN_WALL1) {
-                    tileGui.setWall();
+                    // tileGui.setWall();
                 }
             }
         }

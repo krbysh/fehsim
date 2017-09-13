@@ -301,10 +301,29 @@ const SWAP = new FehAssist("Swap", 1,
     }
 );
 
-const GRADIVUS = new FehWeapon("Gradivus", 16, 1);
-const GRONBLADE_PLUS = new FehWeapon("Gronblade+", 13, 2);
-const BLARBLADE_PLUS = new FehWeapon("Blarblade+", 13, 2);
-const ROGUE_DAGGER_PLUS = new FehWeapon("Rogue Dagger+", 7, 2);
+
+// SWORDS
 const SILVER_SWORD_PLUS = new FehWeapon("Silver Sword+", 15, 1);
 const SEIGLINDE = new FehWeapon("Seiglinde", 16, 1);
+
+// LANCES
+const SILVER_LANCE_PLUS = new FehWeapon("Silver Sword+", 15, 1);
+const GRADIVUS = new FehWeapon("Gradivus", 16, 1);
 const SEIGMUND = new FehWeapon("Seigmund", 16, 1);
+
+// AXES
+const KILLER_AXE_PLUS = new FehWeapon("Killer Axe+", 11, 1);
+
+// DAGGERS
+const ROGUE_DAGGER_PLUS = new FehWeapon("Rogue Dagger+", 7, 2);
+
+// RED TOMES
+const RAUORRAVEN_PLUS = new FehWeapon("Rauorraven+", 11, 2);
+
+// BLUE TOMES
+const THORON_PLUS = new FehWeapon("Thoron+", 13, 2);
+const BLARBLADE_PLUS = new FehWeapon("Blarblade+", 13, 2);
+
+// GREEN TOMES
+const GRONBLADE_PLUS = new FehWeapon("Gronnblade+", 13, 2);
+const GRONNWOLF_PLUS = new FehWeapon("Gronnwolf+", 10, 2);

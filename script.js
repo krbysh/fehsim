@@ -67,7 +67,7 @@ let axeFighter2 = new FehUnit(new FehOverwriteHero(
 
 let robin = new FehUnit(new FehOverwriteHero(
     "Robin (F)", WEAPON_GREEN_TOME, MOVEMENT_INFANTRY,
-    64, 42 - GRONNWORLF_PLUS.might, 32, 32, 25
+    64, 42 - GRONNWOLF_PLUS.might, 32, 32, 25
 ));
 
 let enemyTeam = [];

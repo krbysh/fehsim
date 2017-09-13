@@ -17,6 +17,7 @@ class FehMapHeroGui {
 
         this.weaponIconElement = document.createElement('div');
         this.weaponIconElement.classList.add('weapon-icon');
+        this.weaponIconElement.classList.add(hero.weaponType);
         this.visualElement.appendChild(this.weaponIconElement);
 
         this.hpElement = document.createElement('p');

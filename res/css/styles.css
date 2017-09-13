@@ -112,15 +112,30 @@ body {
 .hero.waiting img { filter: grayscale(100%) brightness(110%) contrast(90%); }
 
 .hero .weapon-icon {
-    width: var(--tile-icon);
-    height: var(--tile-icon);
-    margin: var(--tile-icon-margin);
+    width: 55px;
+    height: 55px;
     position: absolute;
     right:0;
+    transform-origin:right top;
     z-index:10;
-    background-image: url('../img/gui/weapon/Icon_Class_Blue_Lance.png');
-    background-size: cover;
+    margin:0;
+    background-image: url('../img/gui/Status.png');
+    background-position: calc(-56px * 0) 56px;
+    transform: scale( calc( var(--tile-raw) / 72 * 0.45) );
 }
+
+.hero .weapon-icon.WEAPON_SWORD { background-position: calc(-56px * 0) 56px; }
+.hero .weapon-icon.WEAPON_LANCE { background-position: calc(-56px * 1) 56px; }
+.hero .weapon-icon.WEAPON_AXE { background-position: calc(-56px * 2) 56px; }
+.hero .weapon-icon.WEAPON_BOW { background-position: calc(-56px * 3) 56px; }
+.hero .weapon-icon.WEAPON_DAGGER { background-position: calc(-56px * 4) 56px; }
+.hero .weapon-icon.WEAPON_RED_TOME { background-position: calc(-56px * 5) 56px; }
+.hero .weapon-icon.WEAPON_BLUE_TOME { background-position: calc(-56px * 6) 56px; }
+.hero .weapon-icon.WEAPON_GREEN_TOME { background-position: calc(-56px * 7) 56px; }
+.hero .weapon-icon.WEAPON_STAFF { background-position: calc(-56px * 8) 56px; }
+.hero .weapon-icon.WEAPON_RED_BREATH { background-position: calc(-56px * 9) 56px; }
+.hero .weapon-icon.WEAPON_BLUE_BREATH { background-position: calc(-56px * 10) 56px; }
+.hero .weapon-icon.WEAPON_GREEN_BREATH { background-position: calc(-56px * 11) 56px; }
 
 .hero .life-bar {
     width: auto;
@@ -161,7 +176,7 @@ body {
 /* PLAYER */
 .hero.ltr img { transform: scale(-1, 1); }
 .hero.ltr .life-bar div { background:hsla(192, 100%, 45%, 1); }
-.hero.ltr .weapon-icon { left:0; }
+.hero.ltr .weapon-icon { left:0; transform-origin: left top;}
 .hero.ltr p.hp { color:hsla(192, 100%, 45%, 1);}
 
 /* ---------------------------------------------------------------------- */
