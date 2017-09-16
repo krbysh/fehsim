@@ -64,6 +64,7 @@ class FehOverwriteHero extends FehHero {
         modifier.apply =
             (/** @type {FehUnit} */ unit) => {
                 unit.maxHp = this.hp;
+                unit.hp = this.hp;
                 unit.atk = this.atk;
                 unit.spd = this.spd;
                 unit.def = this.def;
@@ -177,8 +178,9 @@ class FehUnit {
     /**
      * 
      * @param {FehHero} hero 
+     * @param {FehWeapon} weapon
      */
-    constructor(hero = null) {
+    constructor(hero = null, weapon = null) {
 
         /**
          * @type {FehBattle}
@@ -188,7 +190,7 @@ class FehUnit {
         /**
          * @type {FehHero}
          */
-        this.hero = null;
+        this.hero = hero;
 
         /**
          * 
@@ -266,6 +268,11 @@ class FehUnit {
         /**
          * @type {number}
          */
+        this.coolDownCount = 0;
+
+        /**
+         * @type {number}
+         */
         this.hp = 0;
 
         /**
@@ -296,7 +303,7 @@ class FehUnit {
         /**
          * @type {FehWeapon}
          */
-        this.weapon = null;
+        this.weapon = weapon;
 
         /**
          * @type {FehAssist}
@@ -334,8 +341,6 @@ class FehUnit {
         this.skills = [];
 
         this.update();
-
-        if (hero) this.hero = hero;
 
     }
 
@@ -469,5 +474,33 @@ class FehUnit {
 
     toString() {
         return this.name;
+    }
+
+    /**
+     * Abel (5★)  
+        Weapon: Brave Lance+  
+        Special: Aegis  
+        A: HP 5  
+        B: Swordbreaker 3  
+
+     */
+    print() {
+        let str = this.name + '\n';
+        if (this.weapon) str += 'Weapon: ' + this.weapon + '\n';
+        if (this.assist) str += 'Assist: ' + this.assist + '\n';
+        if (this.special) str += 'Special: ' + this.special + '\n';
+        if (this.passiveA) str += 'A: ' + this.passiveA + '\n';
+        if (this.passiveB) str += 'B: ' + this.passiveB + '\n';
+        if (this.passiveC) str += 'C: ' + this.passiveC + '\n';
+        if (this.sacredSeal) str += 'S: ' + this.sacredSeal + '\n';
+
+        str += 'HP : ' + this.hp + '/' + this.maxHp + '\n';
+        str += 'CD : ' + this.coolDownCount + '/' + this.maxCoolCount + '\n';
+        str += 'ATK: ' + this.atk + '\n';
+        str += 'SPD: ' + this.spd + '\n';
+        str += 'DEF: ' + this.def + '\n';
+        str += 'RES: ' + this.res + '\n';
+
+        console.log(str);
     }
 }

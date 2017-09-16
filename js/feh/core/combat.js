@@ -12,9 +12,13 @@ class FehCombat {
      */
     constructor(unit, foe, testing = false) {
 
+        if (!unit) throw new FehException(EX_MISSING_PARAM, 'Active unit is missing');
+        if (!foe) throw new FehException(EX_MISSING_PARAM, 'Pasive unit is missing');
+
         this.activeUnit = unit;
         this.passiveUnit = foe;
 
+        // backup states
         let activeHp0 = this.activeUnit.hp;
         let passiveHp0 = this.passiveUnit.hp;
 
@@ -38,12 +42,13 @@ class FehCombat {
             let followUpAttack = new FehAttack(unit, foe);
             followUpAttack.passiveUnit.hp = followUpAttack.tentativePassiveHp;
             this.attacks.push(followUpAttack);
-        } else {
+        } else if (foe.spd - unit.spd >= 5) {
             let followUpCounterAttack = new FehAttack(foe, unit);
             followUpCounterAttack.passiveUnit.hp = followUpCounterAttack.tentativePassiveHp;
             this.attacks.push(followUpCounterAttack);
         }
 
+        // restore states
         if (testing) {
             this.passiveUnit.hp = passiveHp0;
             this.activeUnit.hp = activeHp0;
@@ -64,9 +69,9 @@ class FehCombat {
             console.log(attack.activeUnit + "'s attacks " + attack.passiveUnit + " for " + attack.dmg + " damage");
 
             if (this.activeUnit == attack.activeUnit)
-                console.log(attack.activeUnit + " " + attack.activeUnit.hp + " : " + attack.passiveUnit + " " + attack.tentativePassiveHp);
+                console.log(attack.activeUnit + " " + attack.tentativeActiveHp + " : " + attack.passiveUnit + " " + attack.tentativePassiveHp);
             else
-                console.log(attack.passiveUnit + " " + attack.tentativePassiveHp + " : " + attack.activeUnit + " " + attack.activeUnit.hp);
+                console.log(attack.passiveUnit + " " + attack.tentativePassiveHp + " : " + attack.activeUnit + " " + attack.tentativeActiveHp);
         });
     }
 }
@@ -216,10 +221,13 @@ class FehAttack {
             );
         if (this.dmg < 0) this.dmg = 0;
 
+        this.tentativeActiveHp = this.activeUnit.hp;
+        this.tentativePassiveHp = this.passiveUnit.hp - this.dmg;
+
         foe.onAttackEnd(this);
         unit.onAttackEnd(this);
 
-        this.tentativePassiveHp = this.passiveUnit.hp - this.dmg;
+        if (this.tentativeActiveHp < 0) this.tentativeActiveHp = 0;
         if (this.tentativePassiveHp < 0) this.tentativePassiveHp = 0;
     }
 

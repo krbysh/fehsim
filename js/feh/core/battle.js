@@ -51,6 +51,14 @@ class FehBattleListener {
     onAssist(unit, target) {
 
     }
+
+    /**
+     * 
+     * @param {FehCombat} combat 
+     */
+    onCombat(combat) {
+
+    }
 }
 
 /**
@@ -361,7 +369,26 @@ class FehBattle {
                 this.listeners.forEach(listener => listener.onAssist(unit, target));
 
             } else {
+
+                // ATTACK
+
+                // Is it a valid move?
+                let query = new FehActionQuery();
+                let result = query.movementQuery(this, unit, false);
+                let toNode = result.validAttackTargetTiles.find(n => n.row == target.row && n.column == target.column);
+                if (!toNode) throw new FehException(EX_ILLEGAL_MOVE, 'The target cannot be attacked by the unit');
+                let fromNode = toNode.attackableFrom.find(n => n.row == row && n.column == column);
+                if (!fromNode) throw new FehException(EX_ILLEGAL_MOVE, 'The target cannot be attacked from those coordinates');
+
                 console.log('ATTACK');
+                unit.isWaiting = true;
+                unit.row = row;
+                unit.column = column;
+
+                let combat = new FehCombat(unit, target);
+
+                this.listeners.forEach(listener => listener.onCombat(combat));
+                
             }
         }
 

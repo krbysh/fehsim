@@ -20,6 +20,10 @@ class FehSkill {
      */
     onBuild(unit) {
     }
+
+    toString() {
+        return this.name;
+    }
 }
 
 /**
@@ -37,6 +41,15 @@ class FehWeapon extends FehSkill {
         super(SKILL_WEAPON, name);
         this.might = might;
         this.range = range;
+    }
+
+    /**
+     * 
+     * @param {FehUnit} unit 
+     */
+    onBuild(unit) {
+        unit.atk += this.might;
+        unit.attackRange = this.range;
     }
 }
 
@@ -313,6 +326,10 @@ const SEIGMUND = new FehWeapon("Seigmund", 16, 1);
 
 // AXES
 const KILLER_AXE_PLUS = new FehWeapon("Killer Axe+", 11, 1);
+
+// BOWS
+const SILVER_BOW_PLUS = new FehWeapon("Silver Bow+", 13, 2);
+const BRAVE_BOW_PLUS = new FehWeapon("Brave Bow+", 7, 2);
 
 // DAGGERS
 const ROGUE_DAGGER_PLUS = new FehWeapon("Rogue Dagger+", 7, 2);

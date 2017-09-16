@@ -3,6 +3,58 @@ const GUISTATE_SELECTED_UNIT = 'GUISTATE_SELECTED_UNIT';
 const GUISTATE_SELECTED_COORDINATES = 'GUISTATE_SELECTED_COORDINATES';
 const GUISTATE_SELECTED_TARGET = 'GUISTATE_SELECTED_TARGET';
 const GUISTATE_SWAP = 'GUISTATE_SWAP';
+const GUISTATE_COMBAT = 'GUISTATE_COMBAT';
+
+class FehBattleStatusGui {
+
+    /**
+     * IMG
+     * DIV
+     *   LABEL(name)
+     *   LABEL(hp)/LABEL(maxHp)
+     *   LABEL(atk)  LABEL(spd)
+     *   LABEL(def)  LABEL(res)
+     */
+    constructor() {
+        this.htmlElement = document.createElement('div');
+        this.htmlElement.classList.add('status-panel');
+        this.htmlElement.innerHTML = `
+            <div class='unit-portrait'>
+            </div>
+            <div class='unit-status'>
+
+                <label name='name'>Virion</label>
+                
+                <label name='hpTxt'>HP</label>
+                <label name='hp'>18</label>
+                <label name='maxHp'>/18</label>
+
+                <label name='atk'>11</label>
+                <label name='spd'>7</label>
+                <label name='def'>6</label>
+                <label name='res'>1</label>
+
+                <label name='atkTxt'>Atk</label>
+                <label name='spdTxt'>Spd</label>
+                <label name='defTxt'>Def</label>
+                <label name='resTxt'>Res</label>
+
+            </div>
+            <div class='unit-equipment'>
+
+                <div name='passiveA'><label>A</label></div>
+                <div name='passiveB'><label>B</label></div>
+                <div name='passiveC'><label>C</label></div>
+                <div name='sacredSeal'><label>S</label></div>
+
+                <label name='weapon'>Iron Bow</label>
+                <label name='assist'>Repositon</label>
+                <label name='special'>Moonbow</label>
+
+            </div>
+        `;
+    }
+}
 
 class FehBattleGui extends FehBattleListener {
 
@@ -45,7 +97,9 @@ class FehBattleGui extends FehBattleListener {
 
         // CLEAR
         this.rootElement.classList.add('game');
-        this.rootElement.innerHTML = '';
+
+        // BUILS STATUS DIV
+        this.statusPanel = new FehBattleStatusGui();
 
         // BUILD BOTTOM NAV
         this.swapSpacesButton = document.createElement('button');
@@ -115,6 +169,7 @@ class FehBattleGui extends FehBattleListener {
         this.mapElement.appendChild(this.mapBackgroundPattern);
 
         // BUILD
+        this.rootElement.appendChild(this.statusPanel.htmlElement);
         this.rootElement.appendChild(this.mapElement);
         this.rootElement.appendChild(this.bottomNav);
         // this.rootElement.appendChild(this.msg);
@@ -166,7 +221,7 @@ class FehBattleGui extends FehBattleListener {
 
         heroes.forEach(hero => this.guiHeroes.push(new FehMapHeroGui(this, hero)));
 
-        this.guiHeroes.forEach(hero => this.mapHeroesElement.appendChild(hero.visualElement))
+        this.guiHeroes.forEach(hero => this.mapHeroesElement.appendChild(hero.htmlElement))
         this.guiHeroes.forEach(hero => hero.reset());
     }
 
@@ -297,6 +352,63 @@ class FehBattleGui extends FehBattleListener {
 
         // QUIZAS ESTO DEBERIA IR EN OTRO LADO
         this.onAfterAction();
+    }
+
+    /**
+     * 
+     * @param {FehCombat} combat 
+     */
+    onCombat(combat) {
+        console.log(combat);
+        //this.setSelectedUnit(null);
+        this.state = GUISTATE_COMBAT;
+        this.clearTiles();
+        //lynBraveHeroes.isWaiting = false;
+        this.playAttackAnimations(combat.attacks, 0, () => {
+            this.state = GUISTATE_HOME;
+            this.selectedUnit = null;
+            this.selectedTarget = null;
+            this.getGuiMapHeroForMapHero(combat.activeUnit).reset();
+            this.getGuiMapHeroForMapHero(combat.passiveUnit).reset();
+            this.clearTiles();
+        });
+    }
+
+    /**
+     * 
+     * @param {FehAttack[]} attacks 
+     * @param {number} index 
+     * @param {function()} onfinish
+     */
+    playAttackAnimations(attacks, index, onfinish) {
+
+        if (index >= attacks.length) {
+            if (onfinish) onfinish();
+            return;
+        }
+
+        let attack = attacks[index];
+        let guiUnit = this.getGuiMapHeroForMapHero(attack.activeUnit);
+        guiUnit.playAttack(attack, () => {
+            console.log();
+            this.playAttackAnimations(attacks, index + 1, onfinish);
+        })
+
+    }
+
+    /**
+     * 
+     * @param {FehAttack} attack 
+     */
+    onAnimationAttackHit(attack) {
+        let a = attack.activeUnit;
+        let p = attack.passiveUnit;
+        let guiA = this.getGuiMapHeroForMapHero(a);
+        let guiP = this.getGuiMapHeroForMapHero(p);
+        guiA.setHp(attack.tentativeActiveHp);
+        guiP.setHp(attack.tentativePassiveHp);
+        console.log(attack.tentativeActiveHp + ', ' + attack.tentativePassiveHp + ', ' + attack.dmg
+        );
     }
 
     onAfterAction() {
@@ -594,7 +706,7 @@ class FehBattleGui extends FehBattleListener {
      */
     setSelectedTarget(target) {
 
-        if (this.state !== GUISTATE_SELECTED_UNIT && this.state !== GUISTATE_SELECTED_TARGET)
+        if (this.state !== GUISTATE_SELECTED_UNIT && this.state !== GUISTATE_SELECTED_TARGET && this.state !== GUISTATE_COMBAT)
             throw new FehException(EX_WRONG_TIMING, "Bad timing, you can't set the selected target at this time");
 
         this.selectedTarget = target;
@@ -678,7 +790,7 @@ class FehBattleGui extends FehBattleListener {
      * @returns {FehMapHeroGui}
      */
     getGuiMapHeroForMapHero(hero) {
-        return this.guiHeroes.find(guiHero => guiHero.hero == hero)
+        return this.guiHeroes.find(guiHero => guiHero.unit == hero)
     }
 
     /**
@@ -689,6 +801,7 @@ class FehBattleGui extends FehBattleListener {
         this.clearTileFrames();
         this.clearTileActionables();
         this.clearTileArrows();
+        this.clearDialog();
         if (this.controller.isPlayerPhase()) {
             this.controller.getTeam().forEach(hero => {
                 if (hero.isWaiting) return;
