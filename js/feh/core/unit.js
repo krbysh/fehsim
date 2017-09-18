@@ -31,12 +31,12 @@ class FehHero {
         /**
          * @type {String}
          */
-        this.sprite = "../res/img/heroes/Icon_Portrait_" + name.replace(/\s/g, "_") + ".png";
+        this.sprite = "res/img/heroes/Icon_Portrait_" + name.replace(/\s/g, "_") + ".png";
 
         /**
          * @type {String}
          */
-        this.portrait = "../res/img/heroes/Icon_Portrait_" + name.replace(/\s/g, "_") + ".png";
+        this.portrait = "res/img/heroes/Icon_Portrait_" + name.replace(/\s/g, "_") + ".png";
     }
 
     /**
