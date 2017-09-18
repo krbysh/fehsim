@@ -33,7 +33,7 @@
     }
 }
 
-.phase-change-msg {--phase-change-msg-duration: 1.0s; /* 1.0s */position:absolute;width:0;height:0;top:0;left:0;display:flex;flex-flow:column;align-items:center;color:#ffffff;overflow:hidden;z-index:100;}
+.phase-change-msg {--phase-change-msg-duration: 1.0s; /* 1.0s */position:absolute;width:0;height:0;top:0;left:0;display:flex;flex-flow:column;align-items:center;color:#ffffff;overflow:hidden;z-index:999100;}
 
 .phase-change-msg h1, .phase-change-msg h2 {
     z-index:2;

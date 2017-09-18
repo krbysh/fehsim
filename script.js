@@ -39,31 +39,31 @@ map.foregroundImageUri = 'res/img/maps/common/CloudAdd.png';
 let redMage = new FehUnit(new FehOverwriteHero(
     "Red Mage", WEAPON_RED_TOME, MOVEMENT_INFANTRY,
     52, 45 - RAUORRAVEN_PLUS.might, 35, 22, 31,
-    "res/img/heroes/Map_Red_Mage.png"
+    "../res/img/heroes/Map_Red_Mage.png"
 ), RAUORRAVEN_PLUS);
 
 let lanceFighter = new FehUnit(new FehOverwriteHero(
     "Lance Fighter", WEAPON_LANCE, MOVEMENT_INFANTRY,
     61, 49 - SILVER_LANCE_PLUS.might, 34, 33, 25,
-    "res/img/heroes/Map_Lance_Fighter.png"
+    "../res/img/heroes/Map_Lance_Fighter.png"
 ), SILVER_LANCE_PLUS);
 
 let axeFighter1 = new FehUnit(new FehOverwriteHero(
     "Axe Fighter", WEAPON_AXE, MOVEMENT_INFANTRY,
     61, 45 - KILLER_AXE_PLUS.might, 34, 33, 25,
-    "res/img/heroes/Map_Axe_Fighter.png"
+    "../res/img/heroes/Map_Axe_Fighter.png"
 ), KILLER_AXE_PLUS);
 
 let blueMage = new FehUnit(new FehOverwriteHero(
     "Blue Mage", WEAPON_BLUE_TOME, MOVEMENT_INFANTRY,
     52, 47 - THORON_PLUS.might, 35, 22, 31,
-    "res/img/heroes/Map_Blue_Mage.png"
+    "../res/img/heroes/Map_Blue_Mage.png"
 ), THORON_PLUS);
 
 let axeFighter2 = new FehUnit(new FehOverwriteHero(
     "Axe Fighter", WEAPON_AXE, MOVEMENT_INFANTRY,
     61, 45 - KILLER_AXE_PLUS.might, 34, 33, 25,
-    "res/img/heroes/Map_Axe_Fighter.png"
+    "../res/img/heroes/Map_Axe_Fighter.png"
 ), KILLER_AXE_PLUS);
 
 let robin = new FehUnit(new FehOverwriteHero(

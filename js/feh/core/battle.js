@@ -59,6 +59,14 @@ class FehBattleListener {
     onCombat(combat) {
 
     }
+
+    /**
+     * 
+     * @param {FehUnit} unit 
+     */
+    onDeath(unit) {
+
+    }
 }
 
 /**
@@ -72,7 +80,13 @@ class FehController {
      * @param {string} playerKey 
      */
     constructor(battle, playerKey) {
+        /**
+         * @type {FehBattle}
+         */
         this.battle = battle;
+        /**
+         * @type {string}
+         */
         this.playerKey = playerKey;
     }
 
@@ -163,7 +177,7 @@ class FehBattle {
         /**
          * @type {FehUnit[]}
          */
-        this.heroes = [];
+        this.units = [];
 
         /**
          * @type {FehUnit[]}
@@ -204,10 +218,10 @@ class FehBattle {
         // this.playerTeam = buildTeamFromBuild(this.teamBuild1);
         // this.enemyTeam = buildTeamFromBuild(this.teamBuild2);
 
-        this.heroes = [];
-        this.playerTeam.forEach(heroe => this.heroes.push(heroe));
-        this.enemyTeam.forEach(heroe => this.heroes.push(heroe));
-        this.heroes.forEach(unit => {
+        this.units = [];
+        this.playerTeam.forEach(unit => this.units.push(unit));
+        this.enemyTeam.forEach(unit => this.units.push(unit));
+        this.units.forEach(unit => {
             unit.battle = this;
             unit.rebuild();
         })
@@ -261,7 +275,7 @@ class FehBattle {
             throw new FehException(EX_WRONG_TIMING, "You can only call fight during the 'Swap Spaces' phase");
         this.phase = PHASE_PLAYER;
         this.turn = 1;
-        this.heroes.forEach(hero => hero.isWaiting = false);
+        this.units.forEach(hero => hero.isWaiting = false);
         this.listeners.forEach(listener => listener.onPhase(this.phase, this.turn));
     }
 
@@ -388,7 +402,21 @@ class FehBattle {
                 let combat = new FehCombat(unit, target);
 
                 this.listeners.forEach(listener => listener.onCombat(combat));
-                
+
+                if (unit.hp <= 0) {
+                    this.listeners.forEach(listener => listener.onDeath(unit));
+                    this.units.splice(this.units.indexOf(unit), 1);
+                    let team = this.getTeam(unit.playerKey);
+                    team.splice(team.indexOf(unit), 1);
+                    unit.isDead = true;
+                } else if (target.hp <= 0) {
+                    this.listeners.forEach(listener => listener.onDeath(target));
+                    this.units.splice(this.units.indexOf(target), 1);
+                    team.splice(team.indexOf(target), 1);
+                    target.isDead = true;
+                }
+
+
             }
         }
 
@@ -443,7 +471,7 @@ class FehBattle {
      */
     getUnitAt(row, column) {
         this.validateCoordinates(row, column);
-        return this.heroes.find(heroe => heroe.row == row && heroe.column == column);
+        return this.units.find(heroe => heroe.row == row && heroe.column == column);
     }
 
     /**
@@ -457,6 +485,16 @@ class FehBattle {
         let query = new FehActionQuery();
         let result = query.movementQuery(this, hero, allyTilesAreValidMovementSpaces);
         return result;
+    }
+
+    /**
+     * 
+     * @param {FehUnit} unit 
+     * @param {FehUnit} foe 
+     */
+    getCombatForecast(unit, foe) {
+        let combat = new FehCombat(unit, foe, true);
+        return combat;
     }
 
     /**

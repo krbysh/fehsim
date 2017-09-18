@@ -5,57 +5,6 @@ const GUISTATE_SELECTED_TARGET = 'GUISTATE_SELECTED_TARGET';
 const GUISTATE_SWAP = 'GUISTATE_SWAP';
 const GUISTATE_COMBAT = 'GUISTATE_COMBAT';
 
-class FehBattleStatusGui {
-
-    /**
-     * IMG
-     * DIV
-     *   LABEL(name)
-     *   LABEL(hp)/LABEL(maxHp)
-     *   LABEL(atk)  LABEL(spd)
-     *   LABEL(def)  LABEL(res)
-     */
-    constructor() {
-        this.htmlElement = document.createElement('div');
-        this.htmlElement.classList.add('status-panel');
-        this.htmlElement.innerHTML = `
-            <div class='unit-portrait'>
-            </div>
-            <div class='unit-status'>
-
-                <label name='name'>Virion</label>
-                
-                <label name='hpTxt'>HP</label>
-                <label name='hp'>18</label>
-                <label name='maxHp'>/18</label>
-
-                <label name='atk'>11</label>
-                <label name='spd'>7</label>
-                <label name='def'>6</label>
-                <label name='res'>1</label>
-
-                <label name='atkTxt'>Atk</label>
-                <label name='spdTxt'>Spd</label>
-                <label name='defTxt'>Def</label>
-                <label name='resTxt'>Res</label>
-
-            </div>
-            <div class='unit-equipment'>
-
-                <div name='passiveA'><label>A</label></div>
-                <div name='passiveB'><label>B</label></div>
-                <div name='passiveC'><label>C</label></div>
-                <div name='sacredSeal'><label>S</label></div>
-
-                <label name='weapon'>Iron Bow</label>
-                <label name='assist'>Repositon</label>
-                <label name='special'>Moonbow</label>
-
-            </div>
-        `;
-    }
-}
-
 class FehBattleGui extends FehBattleListener {
 
     /**
@@ -69,7 +18,12 @@ class FehBattleGui extends FehBattleListener {
 
         this.aiStepFunction = null;
         this.rootElement = gameElement;
+
+        /**
+         * @type {FehController}
+         */
         this.controller = controller;
+
         this.guiHeroes = guiHeroes;
 
         /**
@@ -204,6 +158,27 @@ class FehBattleGui extends FehBattleListener {
         let dialogElementIcon = document.createElement('div');
         this.dialogElement.appendChild(dialogElementIcon);
         this.mapElement.appendChild(this.dialogElement);
+
+        // HIT ANIMATION
+        this.hitElement = document.createElement('div');
+        this.hitElement.appendChild(document.createElement('div'));
+        this.hitElement.appendChild(document.createElement('div'));
+        this.hitElement.classList.add('le-hit');
+        this.mapElement.appendChild(this.hitElement);
+        this.hitAnimation = this.hitElement.animate(
+            // keyframes
+            [
+                { transform: 'scale(0) rotate(0deg)', opacity: 1 },
+                { transform: 'scale(1.0) rotate(45deg)', opacity: 1 },
+                { transform: 'scale(1.10) rotate(50deg)', opacity: 0 }
+            ],
+            // timing options
+            {
+                duration: 450,
+                easing: 'ease-out',
+                iterations: 1
+            });
+        this.hitAnimation.cancel();
     }
 
     onStart() {
@@ -371,6 +346,8 @@ class FehBattleGui extends FehBattleListener {
             this.getGuiMapHeroForMapHero(combat.activeUnit).reset();
             this.getGuiMapHeroForMapHero(combat.passiveUnit).reset();
             this.clearTiles();
+            this.statusPanel.hideCombatForecast();
+            this.onAfterAction();
         });
     }
 
@@ -390,7 +367,6 @@ class FehBattleGui extends FehBattleListener {
         let attack = attacks[index];
         let guiUnit = this.getGuiMapHeroForMapHero(attack.activeUnit);
         guiUnit.playAttack(attack, () => {
-            console.log();
             this.playAttackAnimations(attacks, index + 1, onfinish);
         })
 
@@ -407,11 +383,15 @@ class FehBattleGui extends FehBattleListener {
         let guiP = this.getGuiMapHeroForMapHero(p);
         guiA.setHp(attack.tentativeActiveHp);
         guiP.setHp(attack.tentativePassiveHp);
-        console.log(attack.tentativeActiveHp + ', ' + attack.tentativePassiveHp + ', ' + attack.dmg
-        );
+        console.log(attack.tentativeActiveHp + ', ' + attack.tentativePassiveHp + ', ' + attack.dmg);
+
+        this.hitElement.style.left = "calc(var(--tile-size) * " + guiP.unit.column + ")";
+        this.hitElement.style.top = "calc(var(--tile-size) * " + guiP.unit.row + ")";
+        this.hitAnimation.play();
     }
 
     onAfterAction() {
+
         // AUTO-END-TURN
         let actionsLeft = this.controller.getTeam().filter(hero => !hero.isWaiting).length;
         if (actionsLeft == 0) {
@@ -433,6 +413,8 @@ class FehBattleGui extends FehBattleListener {
      */
     onTile(row, column) {
 
+        if (!this.controller.isPlayerPhase()) return;
+
         let t1 = new Date().getTime();
         let t0 = this.lastOnTileEvent;
         let t = t1 - t0;
@@ -440,6 +422,7 @@ class FehBattleGui extends FehBattleListener {
         let doubleTap = t < 200;
 
         let unit = this.controller.battle.getUnitAt(row, column);
+
 
         if (this.state == GUISTATE_HOME) {
 
@@ -513,9 +496,10 @@ class FehBattleGui extends FehBattleListener {
                 this.selectedColumn === column;
 
             // DUPLICATED_CODE
-            let unitInValidAssistOrAttackRange =
-                result.validAttackTargetTiles.indexOf(node) >= 0 ||
-                result.validAssistTargetTiles.indexOf(node) >= 0;
+            let unitInValidAssistOrAttackRange = unit && (
+                result.validAttackTargetTiles.indexOf(node) >= 0 && this.controller.isEnemy(unit) ||
+                result.validAssistTargetTiles.indexOf(node) >= 0 && !this.controller.isEnemy(unit)
+            );
 
             if (emptyIrrelevantTile || originalSelectedTile && !doubleTap) this.setSelectedUnit(null);
             else if (originalSelectedTile && doubleTap) this.controller.doAction(this.selectedUnit);
@@ -523,6 +507,7 @@ class FehBattleGui extends FehBattleListener {
             else if (confirmationTile) this.controller.doAction(this.selectedUnit, this.selectedRow, this.selectedColumn, null);
             else if (unitNotInValidAttackOrAssistTile) this.showStatusOf(unit);
             else if (validMovementTile) this.setSelectedPosition(row, column);
+            else if (unit) this.showStatusOf(unit);
 
         } else if (this.state == GUISTATE_SELECTED_TARGET) {
 
@@ -563,10 +548,11 @@ class FehBattleGui extends FehBattleListener {
                 (assisting && targetNode.assistableFrom.indexOf(node) >= 0) ||
                 (attacking && targetNode.attackableFrom.indexOf(node) >= 0);
 
-            // DUPLICATED_CODE (cambiar de target)
-            let unitInValidAssistOrAttackRange =
-                result.validAttackTargetTiles.indexOf(node) >= 0 ||
-                result.validAssistTargetTiles.indexOf(node) >= 0;
+            // DUPLICATED_CODE
+            let unitInValidAssistOrAttackRange = unit && (
+                result.validAttackTargetTiles.indexOf(node) >= 0 && this.controller.isEnemy(unit) ||
+                result.validAssistTargetTiles.indexOf(node) >= 0 && !this.controller.isEnemy(unit)
+            );
 
             if (emptyIrrelevantTile) this.setSelectedUnit(null);
             else if (confirmationTile) this.setSelectedTarget(null);
@@ -578,6 +564,8 @@ class FehBattleGui extends FehBattleListener {
                 this.setSelectedPosition(row, column);
             }
 
+            if (!this.selectedTarget) this.statusPanel.hideCombatForecast();
+
         }
 
     }
@@ -587,12 +575,19 @@ class FehBattleGui extends FehBattleListener {
      * @param {FehUnit} unit 
      */
     showStatusOf(unit) {
+        console.log('show status of ' + this.state);
         if (this.state == GUISTATE_HOME || this.state == GUISTATE_SWAP) {
             let result = this.controller.battle.getRangeOf(unit, true);
             this.clearTileColors();
             this.clearTileActionables();
-            result.tilesInAttackRange.forEach(node => this.guiTiles[node.row][node.column].turnRed());
+            if (unit.attackRange > 0) result.tilesInAttackRange.forEach(node => this.guiTiles[node.row][node.column].turnRed());
+            else result.tilesInAssistRange.forEach(node => this.guiTiles[node.row][node.column].turnGreen());
             result.traversableTiles.forEach(node => this.guiTiles[node.row][node.column].turnBlue());
+
+            this.statusPanel.showUnitStatus(unit);
+        }
+        if (this.state == GUISTATE_SELECTED_UNIT) {
+            this.statusPanel.showUnitStatus(unit);
         }
     }
 
@@ -617,6 +612,7 @@ class FehBattleGui extends FehBattleListener {
             this.clearTileFrames();
             this.clearTileActionables();
             this.getGuiTileWithHero(this.selectedUnit).showBlueFrame();
+            result.tilesInAssistRange.forEach(node => this.guiTiles[node.row][node.column].turnGreen());
             result.tilesInAttackRange.forEach(node => this.guiTiles[node.row][node.column].turnRed());
             result.traversableTiles.forEach(node => this.guiTiles[node.row][node.column].turnBlue());
             result.validMovementTiles.forEach(node => {
@@ -755,6 +751,9 @@ class FehBattleGui extends FehBattleListener {
             selectedUnitTile.showBlueFrame();
 
             this.state = GUISTATE_SELECTED_TARGET;
+
+            if (this.controller.isEnemy(this.selectedTarget))
+                this.statusPanel.showCombatForecast(this.controller.battle.getCombatForecast(this.selectedUnit, this.selectedTarget));
 
         } else {
 

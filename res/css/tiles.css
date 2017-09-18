@@ -5,6 +5,9 @@
     grid-template-columns: var(--tile-size) var(--tile-size) var(--tile-size) var(--tile-size) var(--tile-size) var(--tile-size);
     z-index: 100;
     position:absolute;
+}
+
+.tile-input {
     cursor:pointer;
 }
 
@@ -95,8 +98,8 @@
 }
 
 .green-background .tile-background {
-    background-color: hsla(120, 100%, 50%, 0.2);
-    box-shadow: inset 0 0 calc(var(--tile-size) * 0.25) hsla(120, 100%, 50%, 1);
+    background-color: hsla(120, 100%, 50%, 0.05);
+    box-shadow: inset 0 0 calc(var(--tile-size) * 0.25) hsla(120, 100%, 50%, 0.35);
 }
 
 .red-background .tile-background {

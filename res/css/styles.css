@@ -4,7 +4,7 @@ body {
 }
 
 .game {
-    background:#bfb8b8;
+    background: #1f1f1f;
     width:calc(var(--tile-size) * 6);
     position:relative;
     overflow: hidden;
@@ -323,6 +323,44 @@ body {
     --tile-size: calc(var(--tile-raw) * 1px);
     --font-size: 14px;
 }
+body {
+        background:#1f1f1f !important;
+}
+
+
+
+@media(max-width: 320px) { :root { --tile-raw: 48; } }
+@media(max-width: 360px) { :root { --tile-raw: 60; } }
+@media(max-width: 412px) { :root { --tile-raw: 64; } }
+
+
+/* MAIN ======================================================== */
+
+.le-hit {
+    background:#FFC107;
+    width: var(--tile-size);
+    height: var(--tile-size);
+    position:absolute;
+    
+    opacity:1;
+    z-index: -1;
+    z-index:9999999999999999;
+    transform:scale(0);
+}
+.le-hit div {
+    border-radius:120px;
+    background:#ffffff;
+    width: var(--tile-size);
+    height: var(--tile-size);
+    position:absolute;
+    transform: rotate(45deg) scale(1.2);
+}
+.le-hit div:nth-child(2) {
+    border-radius:0;
+    background:red;
+    transform: rotate(45deg) scale(1);
+    z-index:-1;
+}
 
 /* MAIN ======================================================== */
 
@@ -330,9 +368,12 @@ body {
     display:flex;
     flex-flow:column;
     height:100vh;
-    background:#222;
+    background: #ffffff;
 }
 
 .game {
     margin:auto;
+    /* filter: blur(5px); */
+    /* opacity: 0.2; */
+    transition: 0.25s;
 }

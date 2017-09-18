@@ -1,3 +1,7 @@
+.status-panel .hidden {
+    display:none;
+}
+
 .status-panel {
     font-family: system;
     position:relative;
@@ -12,6 +16,13 @@
         118px [b];
     box-shadow: 0 0 10px black;
     z-index:200;
+
+    --stat-color: #FFF59D;
+    --hp-color: rgb(224, 188, 79);
+}
+
+.status-panel.initial * {
+    display:none;
 }
 
 .status-panel label {
@@ -30,7 +41,8 @@
 /* UNIT PORTRAIT */
 /* ================================================ */
 
-.status-panel .unit-portrait {
+.status-panel .unit-portrait, 
+.status-panel .foe-portrait {
     grid-area: a / begin / b / ending;
     background-image: url('../img/heroes/Icon_Portrait_Leo.png');
     background-repeat: no-repeat;
@@ -76,6 +88,10 @@
     font-size:15px;
     background: linear-gradient(to top, rgba(255, 255, 255, 0.025), rgba(255, 0, 0, 0) 50%);
     border-bottom: solid 1px rgba(242, 241, 154, 0.16);
+    text-overflow:ellipsis;
+    line-break:after-white-space;
+    white-space: nowrap; 
+    overflow:hidden;
 }
 
 .unit-status label[name=hpTxt] {
@@ -90,7 +106,7 @@
     line-height: 32px;
     text-align:right;
     font-size:20px;
-    color: #FFC107;
+    color: var(--hp-color);
     border-bottom: solid 1px rgba(242, 241, 154, 0.16);
 }
 
@@ -98,7 +114,7 @@
     grid-area: hp / stat2 / hp-end / prend;
     line-height: 32px;
     font-size:15px;
-    color: #FFC107;
+    color: var(--hp-color);
     text-align:left;
     text-indent: 8px;
     border-bottom: solid 1px rgba(242, 241, 154, 0.16);
@@ -129,7 +145,7 @@
     text-align: right;
     line-height: 18px;
     font-size: 15px;
-    color: #FFF59D;
+    color: var(--stat-color);
     border-bottom: solid 1px rgba(242, 241, 154, 0.16);
 }
 
@@ -184,7 +200,7 @@
 .unit-equipment div[name=sacredSeal] { grid-area: skills / skill4 / skills-end / skill4-end;}
 
 .unit-equipment label[name=weapon] ,
-.unit-equipment label[name=assist] ,
+.unit-equipment label[name=assist] ,    
 .unit-equipment label[name=special] {
     text-align: left;
     text-indent: 0px;
@@ -213,3 +229,182 @@
 .unit-equipment div[name=passiveB] label   { color: #2196F3; }
 .unit-equipment div[name=passiveC] label   { color: #4CAF50; }
 .unit-equipment div[name=sacredSeal] label { color: #FF9800; }
+
+/* ================================================ */
+/* COMBAT FORECAST */
+/* ================================================ */
+
+.combat-forecast {
+    background:#0c0c0c;
+    display:grid;
+    grid-area: a / begin / b / ending;
+    z-index:10;
+    grid-template-rows:
+        [toptop] 6px
+        [name] 24px
+        [name-end] 11px
+        [hp] 31px
+        [hp-end] 14px
+        [desc] 20px
+        [desc-end] auto
+        [ending];
+    
+    --arrow-gap: 32px;
+    --s-gap: 15px;
+    --n-gap: 22px;
+
+    grid-template-columns:
+        [begin] auto 
+        [u-name] var(--n-gap) [u-s] var(--s-gap) [u-hp] 32px [u-arrow] var(--arrow-gap) [u-hp2] 32px [u-hp3] 20px 
+        [mid]    20px [f-hp] 32px [f-arrow] var(--arrow-gap) [f-hp2] 32px [f-hp3] var(--s-gap) [f-s] var(--n-gap) [f-name] auto [ending];
+}
+
+/* --- */
+
+.combat-forecast .unit-portrait {
+    grid-area: toptop / begin / ending / mid;
+    background-size:contain;
+    background-position: left center;
+    background-image:
+        url('../img/heroes/Icon_Portrait_Leo.png'), 
+        linear-gradient(to left, rgba(0, 0, 0, 0.25), transparent 100%);
+    z-index:-2;
+}
+
+.combat-forecast .foe-portrait {
+    grid-area: toptop / mid / ending / ending;
+    background-size:contain;
+    background-position: right left;
+        background-image:
+        url('../img/heroes/Icon_Portrait_Leo.png'), 
+        linear-gradient(to left, rgba(0, 0, 0, 0.25), transparent 100%);
+    transform: scaleX(-1);
+    z-index:-2;
+}
+
+/* --- */
+
+.combat-forecast div[name=ld] {
+    grid-area: toptop / mid / ending / ending;
+    background:linear-gradient(to right, #101010 50%, transparent);
+    z-index:-1;
+}
+.combat-forecast div[name=ed] {
+    grid-area: toptop / begin / ending / mid;
+    background:linear-gradient(to left, #161616 50%, transparent);
+    z-index:-1;
+}
+
+.combat-forecast label[name=hp] {
+    grid-area: hp / u-hp3 / hp-end / f-hp;
+    line-height: 32px;
+    font-size:13px;
+    border-bottom: solid 1px rgba(242, 241, 154, 0.16);
+}
+
+/* --- */
+.combat-forecast label[name=foe-name],
+.combat-forecast label[name=unit-name] {
+    line-height:24px;
+    font-size:14px;
+    text-align:center;
+    text-indent:6px;
+    border-bottom: solid 1px rgba(242, 241, 154, 0.16);
+}
+.combat-forecast label[name=unit-name] { 
+    grid-area: name / u-name / name-end / mid; 
+    background: linear-gradient(to left, rgba(0, 0, 0, 0.25), transparent 100%);
+}
+.combat-forecast label[name=foe-name] {
+    grid-area: name / mid / name-end / f-name; 
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.25), transparent 100%);
+}
+
+/* --- from hp */
+.combat-forecast label[name=foe-from],
+.combat-forecast label[name=unit-from] {
+    font-size:21px;
+    line-height:30px;
+    text-align:center;
+    color:var(--hp-color);
+    background: linear-gradient(to left, rgba(0, 0, 0, 0.3), transparent 100%);
+    border-bottom: solid 1px rgba(242, 241, 154, 0.16);
+}
+.combat-forecast label[name=unit-from] {
+    grid-area: hp / u-hp / hp-end / u-arrow;
+}
+.combat-forecast label[name=foe-from] {
+    grid-area: hp / f-hp / hp-end / f-arrow;
+}
+
+/* --- arrows */
+.combat-forecast label[name=unit-arrow],
+.combat-forecast label[name=foe-arrow] {
+    font-size:13px;
+    line-height:30px;
+    text-align: center;
+    color:var(--hp-color);
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: solid 1px rgba(242, 241, 154, 0.16);
+}
+.combat-forecast label[name=unit-arrow] { grid-area: hp / u-arrow / hp-end / u-hp2;}
+.combat-forecast label[name=foe-arrow] { grid-area: hp / f-arrow / hp-end / f-hp2;}
+
+/* --- to hp */
+.combat-forecast label[name=foe-to],
+.combat-forecast label[name=unit-to] {
+    font-size:21px;
+    line-height:30px;
+    color:var(--hp-color);
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.3), transparent 100%);
+    border-bottom: solid 1px rgba(242, 241, 154, 0.16);
+}
+.combat-forecast label[name=unit-to] {
+    grid-area: hp / u-hp2 / hp-end / u-hp3;
+}
+.combat-forecast label[name=foe-to] {
+    grid-area: hp / f-hp2 / hp-end / f-hp3;
+}
+
+/* --- cooldown */
+.combat-forecast label[name=unit-cooldown],
+.combat-forecast label[name=foe-cooldown] {
+    font-size:16px;
+    line-height:18px;
+    color:#ff4f8b;
+}
+.combat-forecast label[name=unit-cooldown] {
+    grid-area: desc / u-s / desc-end / mid;
+    text-align: left;
+}
+.combat-forecast label[name=foe-cooldown] {
+    grid-area: desc / mid / desc-end / f-s;
+    text-align: right;
+}
+
+
+/* --- desc */
+.combat-forecast label[name=unit-description],
+.combat-forecast label[name=foe-description] {
+    text-align: center;
+    font-size:15px;
+    line-height:19px;
+    color:var(--stat-color);
+    border-bottom: solid 1px rgba(242, 241, 154, 0.16);
+}
+.combat-forecast label[name=unit-description] {
+    grid-area: desc / u-name / desc-end / mid;    
+    text-indent: 5px;
+}
+.combat-forecast label[name=foe-description] {
+    grid-area: desc / mid / desc-end / f-name;
+    text-indent: -5px;
+}
+
+.combat-forecast label[name=triangle] {
+    grid-area: desc / u-s / desc-end / f-s;
+    text-align: center;
+    line-height: 17px;
+    font-size: 15px;
+}
+

@@ -82,6 +82,10 @@ class FehMapHeroGui {
         } else {
             this.htmlElement.classList.remove('waiting');
         }
+
+        if (this.unit.isDead) {
+            this.htmlElement.style.opacity = 0;
+        }
     }
 
     setPosition(row, column) {
@@ -90,6 +94,9 @@ class FehMapHeroGui {
 
     buildAnimations() {
 
+        /**
+         * @type {Animation}
+         */
         this.attackAnimations = [];
         for (let i = 0; i < 8; i++) {
             let disp = 0.25;
@@ -100,8 +107,11 @@ class FehMapHeroGui {
             let animation = this.rootElement.animate([
                 { transform: 'translate3D(0px, 0px, 0)' },
                 { transform: 'translate3D(calc(var(--tile-size)*' + x + '), calc(var(--tile-size)*' + y + '), 0)' },
-                { transform: 'translate3D(0px, 0px, 0)' },
-            ], 200);
+            ], {
+                    duration: 125,
+                    iterations: 1,
+                    fill: 'forwards'
+                });
             animation.cancel();
             this.attackAnimations[deg] = animation;
         }
@@ -135,15 +145,16 @@ class FehMapHeroGui {
 
         if (!a) throw new FehException('RAN', 'RAN_RAN_RAN');
 
-        if (a) {
-            if (onanimationend) {
-                a.onfinish = () => {
-                    this.gui.onAnimationAttackHit(attack);
-                    setTimeout(() => { onanimationend(); }, 300);
-                };
-            } else onanimationend = null;
-            a.play();
-        }
+        a.playbackRate = 1;
+        a.onfinish = () => {
+            this.gui.onAnimationAttackHit(attack);
+            a.reverse();
+            a.onfinish = () => {
+                if (onanimationend) setTimeout(() => onanimationend(), 300);
+                a.onfinish = null;
+            }
+        };
+        a.play();
 
         console.log('home');
     }

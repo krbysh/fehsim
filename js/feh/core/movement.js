@@ -251,6 +251,7 @@ class FehActionQuery {
         let tilesInAssistRange = validMovementTiles.map(n => n.getNeighbours(unit.assistRange)).reduce((a, b) => a.concat(b)).filter(n => !n.blocked);
 
         let validAttackTargetTiles = tilesInAttackRange.filter(n => {
+    
             let target = battle.getUnitAt(n.row, n.column);
             if (target == unit) return false;
 
@@ -265,7 +266,7 @@ class FehActionQuery {
                     .filter(m => validMovementTiles.indexOf(m) >= 0);
             } else throw new FehException(EX_BAD_PARAM, 'Rango de ataque tres o que!?')
 
-            return target && battle.areEnemies(unit, target);
+            return target && battle.areEnemies(unit, target) && n.attackableFrom.length > 0;
         });
 
         let validAssistTargetTiles = tilesInAssistRange.filter(n => {

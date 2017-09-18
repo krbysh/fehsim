@@ -31,7 +31,12 @@ class FehHero {
         /**
          * @type {String}
          */
-        this.sprite = "res/img/heroes/Icon_Portrait_" + name.replace(/\s/g, "_") + ".png";
+        this.sprite = "../res/img/heroes/Icon_Portrait_" + name.replace(/\s/g, "_") + ".png";
+
+        /**
+         * @type {String}
+         */
+        this.portrait = "../res/img/heroes/Icon_Portrait_" + name.replace(/\s/g, "_") + ".png";
     }
 
     /**
@@ -53,6 +58,7 @@ class FehOverwriteHero extends FehHero {
         this.def = def;
         this.res = res;
         if (sprite) this.sprite = sprite;
+        if (sprite) this.portrait = sprite;
     }
 
     /**
@@ -82,6 +88,7 @@ class FehOverwriteHero extends FehHero {
                         unit.maxSteps++;
                 }
                 unit.sprite = this.sprite;
+                unit.portrait = this.portrait;
                 unit.name = this.name;
             };
         unit.addModifier(modifier);
@@ -165,6 +172,10 @@ const WEAPON_GREEN_TOME = 'WEAPON_GREEN_TOME';
 const WEAPON_BLUE_TOME = 'WEAPON_BLUE_TOME';
 const WEAPON_RED_TOME = 'WEAPON_RED_TOME';
 
+const WEAPON_GREEN_BREATH = 'WEAPON_GREEN_BREATH';
+const WEAPON_BLUE_BREATH = 'WEAPON_BLUE_BREATH';
+const WEAPON_RED_BREATH = 'WEAPON_RED_BREATH';
+
 const MOVEMENT_FLIER = 'MOVEMENT_FLYER';
 const MOVEMENT_ARMOR = 'MOVEMENT_ARMOR';
 const MOVEMENT_CAVALRY = 'MOVEMENT_CAVALRY';
@@ -206,9 +217,21 @@ class FehUnit {
 
         /**
          * 
+         * @type {string}
+         */
+        this.portrait = null;
+
+        /**
+         * 
          * @type {boolean}
          */
         this.isWaiting = false;
+
+        /**
+         * 
+         * @type {boolean}
+         */
+        this.isDead = false;
 
         /**
          * @type {string}
@@ -366,8 +389,8 @@ class FehUnit {
         this.column = 0;
         this.row = 0;
 
-        this.assistRange = 0;
-        this.attackRange = 1;
+        this.assistRange = 1;
+        this.attackRange = 0;
 
         this.movementType = MOVEMENT_INFANTRY;
         this.maxSteps = 2;

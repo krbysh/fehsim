@@ -19,23 +19,41 @@ class FehCombat {
         this.passiveUnit = foe;
 
         // backup states
-        let activeHp0 = this.activeUnit.hp;
-        let passiveHp0 = this.passiveUnit.hp;
+        this.activeUnitHpBeforeCombat = this.activeUnit.hp;
+        this.passiveUnitHpBeforeCombat = this.passiveUnit.hp;
 
         /**
          * @type {FehAttack[]}
          */
         this.attacks = [];
 
+        /**
+         * @type {boolean}
+         */
+        this.foeCanCounterAttack = foe.attackRange == unit.attackRange;
+
+        // attack count (for the preview)
+        this.activeUnitAttackCount = 0;
+        this.passiveUnitAttackCount = 0;
+
+        this.activeUnitFirstAttackDamage = 0;
+        this.passiveUnitFirstAttackDamage = 0;
+
         // first attack
         let firstAttack = new FehAttack(unit, foe);
         firstAttack.passiveUnit.hp = firstAttack.tentativePassiveHp;
         this.attacks.push(firstAttack);
+        this.activeUnitFirstAttackDamage = firstAttack.dmg; // DESC
+        this.activeUnitAttackCount++;
 
         // counter-attack
-        let counterAttack = new FehAttack(foe, unit);
-        counterAttack.passiveUnit.hp = counterAttack.tentativePassiveHp;
-        this.attacks.push(counterAttack);
+        if (this.foeCanCounterAttack) {
+            let counterAttack = new FehAttack(foe, unit);
+            counterAttack.passiveUnit.hp = counterAttack.tentativePassiveHp;
+            this.attacks.push(counterAttack);
+            this.passiveUnitFirstAttackDamage = counterAttack.dmg; // DESC
+            this.passiveUnitAttackCount++;
+        }
 
         // follow-up attack
         if (unit.spd - foe.spd >= 5) {
@@ -43,15 +61,21 @@ class FehCombat {
             followUpAttack.passiveUnit.hp = followUpAttack.tentativePassiveHp;
             this.attacks.push(followUpAttack);
         } else if (foe.spd - unit.spd >= 5) {
-            let followUpCounterAttack = new FehAttack(foe, unit);
-            followUpCounterAttack.passiveUnit.hp = followUpCounterAttack.tentativePassiveHp;
-            this.attacks.push(followUpCounterAttack);
+            if (this.foeCanCounterAttack) {
+                let followUpCounterAttack = new FehAttack(foe, unit);
+                followUpCounterAttack.passiveUnit.hp = followUpCounterAttack.tentativePassiveHp;
+                this.attacks.push(followUpCounterAttack);
+            }
         }
+
+        // save end states
+        this.passiveUnitHpAfterCombat = this.passiveUnit.hp;
+        this.activeUnitHpAfterCombat = this.activeUnit.hp;
 
         // restore states
         if (testing) {
-            this.passiveUnit.hp = passiveHp0;
-            this.activeUnit.hp = activeHp0;
+            this.passiveUnit.hp = this.passiveUnitHpBeforeCombat;
+            this.activeUnit.hp = this.activeUnitHpBeforeCombat;
         }
 
     }
@@ -189,11 +213,27 @@ class FehAttack {
         this.thereIsAdvantage = false;
         this.thereIsDisadvantage = false;
 
-        if (unit.weaponType == WEAPON_LANCE)
-            this.thereIsAdvantage = foe.weaponType == WEAPON_SWORD;
-
-        if (unit.weaponType == WEAPON_SWORD)
-            this.thereIsDisadvantage = foe.weaponType == WEAPON_LANCE;
+        if (unit.weaponType == WEAPON_SWORD ||
+            unit.weapon == WEAPON_RED_TOME ||
+            unit.weapon == WEAPON_RED_BREATH)
+            this.thereIsAdvantage =
+                foe.weaponType == WEAPON_AXE ||
+                foe.weaponType == WEAPON_GREEN_TOME ||
+                foe.weaponType == WEAPON_GREEN_BREATH;
+        if (unit.weaponType == WEAPON_LANCE ||
+            unit.weapon == WEAPON_BLUE_TOME ||
+            unit.weapon == WEAPON_BLUE_BREATH)
+            this.thereIsAdvantage =
+                foe.weaponType == WEAPON_SWORD ||
+                foe.weaponType == WEAPON_RED_TOME ||
+                foe.weaponType == WEAPON_RED_BREATH;
+        if (unit.weaponType == WEAPON_AXE ||
+            unit.weapon == WEAPON_GREEN_TOME ||
+            unit.weapon == WEAPON_GREEN_BREATH)
+            this.thereIsAdvantage =
+                foe.weaponType == WEAPON_LANCE ||
+                foe.weaponType == WEAPON_BLUE_TOME ||
+                foe.weaponType == WEAPON_BLUE_BREATH;
 
         let atk = unit.atk;
         let mit = isPhysical ? foe.def : foe.res;
