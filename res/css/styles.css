@@ -315,7 +315,7 @@ body {
 
 @font-face {
     font-family: system;
-    src: url('../font/UC_FONTBig5+HK2008_SKIP.ttf')
+    src: url('../font/system.woff2')
 }
 
 :root {
@@ -324,7 +324,7 @@ body {
     --font-size: 14px;
 }
 body {
-        background:#1f1f1f !important;
+        background: #1b1b1b !important;
 }
 
 
