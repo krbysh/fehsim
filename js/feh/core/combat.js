@@ -42,30 +42,43 @@ class FehCombat {
         // first attack
         let firstAttack = new FehAttack(unit, foe);
         firstAttack.passiveUnit.hp = firstAttack.tentativePassiveHp;
+        this.activeUnitFirstAttackDamage = firstAttack.dmg; // for DESCRIPTION
         this.attacks.push(firstAttack);
-        this.activeUnitFirstAttackDamage = firstAttack.dmg; // DESC
         this.activeUnitAttackCount++;
 
         // counter-attack
         if (this.foeCanCounterAttack) {
-            let counterAttack = new FehAttack(foe, unit);
-            counterAttack.passiveUnit.hp = counterAttack.tentativePassiveHp;
-            this.attacks.push(counterAttack);
-            this.passiveUnitFirstAttackDamage = counterAttack.dmg; // DESC
+
+            if (unit.hp > 0 && foe.hp > 0) {
+                let counterAttack = new FehAttack(foe, unit);
+                counterAttack.passiveUnit.hp = counterAttack.tentativePassiveHp;
+                this.passiveUnitFirstAttackDamage = counterAttack.dmg; // for DESCRIPTION
+                this.attacks.push(counterAttack);
+            }
             this.passiveUnitAttackCount++;
         }
 
         // follow-up attack
         if (unit.spd - foe.spd >= 5) {
-            let followUpAttack = new FehAttack(unit, foe);
-            followUpAttack.passiveUnit.hp = followUpAttack.tentativePassiveHp;
-            this.attacks.push(followUpAttack);
-        } else if (foe.spd - unit.spd >= 5) {
-            if (this.foeCanCounterAttack) {
-                let followUpCounterAttack = new FehAttack(foe, unit);
-                followUpCounterAttack.passiveUnit.hp = followUpCounterAttack.tentativePassiveHp;
-                this.attacks.push(followUpCounterAttack);
+
+            if (unit.hp > 0 && foe.hp > 0) {
+                let followUpAttack = new FehAttack(unit, foe);
+                followUpAttack.passiveUnit.hp = followUpAttack.tentativePassiveHp;
+                this.attacks.push(followUpAttack);
             }
+            this.activeUnitAttackCount++;
+
+        } else if (foe.spd - unit.spd >= 5) {
+
+            if (this.foeCanCounterAttack) {
+                if (unit.hp > 0 && foe.hp > 0) {
+                    let followUpCounterAttack = new FehAttack(foe, unit);
+                    followUpCounterAttack.passiveUnit.hp = followUpCounterAttack.tentativePassiveHp;
+                    this.attacks.push(followUpCounterAttack);
+                }
+                this.passiveUnitAttackCount++;
+            }
+
         }
 
         // save end states

@@ -150,7 +150,7 @@ class FehMapHeroGui {
             this.gui.onAnimationAttackHit(attack);
             a.reverse();
             a.onfinish = () => {
-                if (onanimationend) setTimeout(() => onanimationend(), 300);
+                if (onanimationend) setTimeout(() => onanimationend(), 400);
                 a.onfinish = null;
             }
         };

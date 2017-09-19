@@ -136,7 +136,6 @@ class FehBattleStatusGui {
      * @param {FehCombat} combat 
      */
     showCombatForecast(combat) {
-        console.log(combat);
 
         // quizas deberíamos guardar hp0 del combate de ambas unidades
 
@@ -151,11 +150,11 @@ class FehBattleStatusGui {
         this.forecastFoeAfterElement.innerText = combat.passiveUnitHpAfterCombat;
 
         let unitDesc = '' + combat.activeUnitFirstAttackDamage;
-        if (combat.passiveUnitAttackCount > 1) unitDesc = 'x' + combat.passiveUnitAttackCount;
+        if (combat.activeUnitAttackCount > 1) unitDesc += 'x' + combat.activeUnitAttackCount;
         this.forecastUnitDescriptionElement.innerText = unitDesc;
 
         let foeDesc = '' + combat.passiveUnitFirstAttackDamage;
-        if (combat.passiveUnitAttackCount > 1) foeDesc = 'x' + combat.passiveUnitFirstAttackDamage;
+        if (combat.passiveUnitAttackCount > 1) foeDesc += 'x' + combat.passiveUnitAttackCount;
         if (!combat.foeCanCounterAttack) foeDesc = '-';
         this.forecastFoeDescriptionElement.innerText = foeDesc;
     }

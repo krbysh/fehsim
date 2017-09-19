@@ -412,6 +412,7 @@ class FehBattle {
                 } else if (target.hp <= 0) {
                     this.listeners.forEach(listener => listener.onDeath(target));
                     this.units.splice(this.units.indexOf(target), 1);
+                    let team = this.getTeam(target.playerKey);
                     team.splice(team.indexOf(target), 1);
                     target.isDead = true;
                 }
