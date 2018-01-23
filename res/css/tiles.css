@@ -3,7 +3,7 @@
 {
     display: grid;
     grid-template-columns: var(--tile-size) var(--tile-size) var(--tile-size) var(--tile-size) var(--tile-size) var(--tile-size);
-    z-index: 100;
+    z-index: 90;
     position:absolute;
 }
 

@@ -1,0 +1,203 @@
+{
+    "name": "2nd Assault",
+    "battles": [
+        {
+            "map": "data/maps/birthright-trial.json",
+            "enemies": [
+                {
+                    "hero": "Hinoka",
+                    "level": "40+",
+                    "hp": 61,
+                    "atk": 58,
+                    "spd": 37,
+                    "def": 30,
+                    "res": 29,
+                    "weapon": "Silver Lance+",
+                    "passiveA": "Defiant Def 3"
+                },
+                {
+                    "hero": "Sakura",
+                    "level": "40+",
+                    "hp": 53,
+                    "atk": 39,
+                    "spd": 36,
+                    "def": 29,
+                    "res": 36,
+                    "weapon": "Fear",
+                    "assist": "Mend",
+                    "passiveC": "Fortify Def 3"
+                },
+                {
+                    "hero": "Takumi",
+                    "level": "40+",
+                    "hp": 59,
+                    "atk": 51,
+                    "spd": 40,
+                    "def": 30,
+                    "res": 22,
+                    "weapon": "Fujin Yumi"
+                },
+                {
+                    "hero": "Ryoma",
+                    "level": "40+",
+                    "hp": 61,
+                    "atk": 57,
+                    "spd": 40,
+                    "def": 33,
+                    "res": 26,
+                    "weapon": "Raijinto",
+                    "passiveA": "Defiant Atk 3"
+                }
+            ]
+        },
+        {
+            "map": "data/maps/blazing-trial.json",
+            "enemies": [
+                {
+                    "hero": "Thief",
+                    "level": "40+",
+                    "hp": 54,
+                    "atk": 43,
+                    "spd": 46,
+                    "def": 17,
+                    "res": 38,
+                    "weapon": "Silver Dagger+"
+                },
+                {
+                    "hero": "Thief",
+                    "level": "40+",
+                    "hp": 54,
+                    "atk": 43,
+                    "spd": 46,
+                    "def": 17,
+                    "res": 38,
+                    "weapon": "Silver Dagger+"
+                },
+                {
+                    "hero": "Matthew",
+                    "level": "40+",
+                    "hp": 61,
+                    "atk": 38,
+                    "spd": 40,
+                    "def": 36,
+                    "res": 22,
+                    "weapon": "Rogue Dagger+",
+                    "passiveB": "Poison Strike 3"
+                },
+                {
+                    "hero": "Serra",
+                    "level": "40+",
+                    "hp": 49,
+                    "atk": 46,
+                    "spd": 36,
+                    "def": 26,
+                    "res": 39,
+                    "weapon": "Assault",
+                    "assist": "Mend",
+                    "special": "Swift-Winds Balm",
+                    "passiveC": "Hone Atk 3"
+                }
+            ]
+        },
+        {
+            "map": "data/maps/sinister-shadow.json",
+            "enemies": [
+                {
+                    "hero": "Lance Knight",
+                    "level": "40+",
+                    "hp": 83,
+                    "atk": 61,
+                    "spd": 20,
+                    "def": 48,
+                    "res": 22,
+                    "weapon": "Silver Lance+",
+                    "assist": "Reposition"
+                },
+                {
+                    "hero": "Axe Cavalier",
+                    "level": "40+",
+                    "hp": 59,
+                    "atk": 56,
+                    "spd": 29,
+                    "def": 30,
+                    "res": 35,
+                    "weapon": "Silver Axe+"
+                },
+                {
+                    "hero": "Tharja",
+                    "level": "40+",
+                    "hp": 57,
+                    "atk": 51,
+                    "spd": 41,
+                    "def": 27,
+                    "res": 23,
+                    "weapon": "Fenrir+",
+                    "special": "Retribution",
+                    "passiveB": "Spur Res 3"
+                },
+                {
+                    "hero": "Robin (M)",
+                    "level": "40+",
+                    "hp": 58,
+                    "atk": 47,
+                    "spd": 34,
+                    "def": 34,
+                    "res": 26,
+                    "weapon": "Thoron+",
+                    "special": "Glowing Ember",
+                    "passiveC": "Spur Def 3"
+                }
+            ]
+        },
+        {
+            "map": "data/maps/loyalty-and-ambition.json",
+            "enemies": [
+                {
+                    "hero": "Red Cavalier",
+                    "level": "40+",
+                    "hp": 48,
+                    "atk": 55,
+                    "spd": 31,
+                    "def": 20,
+                    "res": 41,
+                    "weapon": "Bolganone+"
+                },
+                {
+                    "hero": "Lance Flier",
+                    "level": "40+",
+                    "hp": 55,
+                    "atk": 49,
+                    "spd": 42,
+                    "def": 25,
+                    "res": 43,
+                    "weapon": "Silver Lance+"
+                },
+                {
+                    "hero": "Camus",
+                    "level": "40+",
+                    "hp": 62,
+                    "atk": 54,
+                    "spd": 39,
+                    "def": 37,
+                    "res": 20,
+                    "weapon": "Gradivus",
+                    "special": "Rising Thunder",
+                    "passiveA": "Grani's Shield",
+                    "passiveC": "Spur Atk 3"
+                },
+                {
+                    "hero": "Michalis",
+                    "level": "40+",
+                    "hp": 63,
+                    "atk": 57,
+                    "spd": 32,
+                    "def": 42,
+                    "res": 22,
+                    "weapon": "Hauteclere",
+                    "passiveA": "Iote's Shield",
+                    "passiveC": "Threaten Def 3"
+                }
+            ]
+        }
+    ]
+}

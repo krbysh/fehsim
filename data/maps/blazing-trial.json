@@ -1,0 +1,17 @@
+{
+    "name": "Chapter 7-1: Blazing Trial",
+    "foreground" : "res/img/maps/common/CloudAdd.png",
+    "middleground": "res/img/maps/S0801.png",
+    "tiles" : [
+        ["F", "F", "F", "F", "V", "V"],
+        ["P", "P", "P", "F", "V", "V"],
+        ["P", "P", "P", "V", "V", "F"],
+        ["P", "P", "V", "V", "P", "P"],
+        ["P", "P", "V", "P", "P", "P"],
+        ["P", "P", "P", "P", "P", "P"],
+        ["F", "P", "P", "P", "P", "F"],
+        ["F", "F", "F", "P", "F", "F"]
+    ],
+    "player" : [[4, 4], [4, 5], [5, 4], [5, 5]],
+    "enemy" : [[3, 0], [7, 0], [2, 1], [2, 0]]    
+}

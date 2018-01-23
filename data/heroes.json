@@ -1,0 +1,45 @@
+[
+    {
+        "name":"Example Name",
+        "baseRarity": 1,
+        "baseStats": [1,2,3,4,5],
+        "growthValues": [1,2,3,4,5]
+    },
+    {
+        "name":"Example Name 2",
+        "baseRarity": 1,
+        "baseStats": [1,2,3,4,5],
+        "growthValues": [1,2,3,4,5]
+    },
+
+    { "name":"Axe Cavalier",       "movement": "Cavalry",  "weapon": "Axe",        "baseRarity": 1, "baseStats": [1,1,1,1,1],    "growthValues": [1,1,1,1,1] },
+    { "name":"Blue Cavalier",      "movement": "Cavalry",  "weapon": "Blue Tome",  "baseRarity": 1, "baseStats": [1,1,1,1,1],    "growthValues": [1,1,1,1,1] },
+    { "name":"Lance Cavalier",     "movement": "Cavalry",  "weapon": "Lance",      "baseRarity": 1, "baseStats": [1,1,1,1,1],    "growthValues": [1,1,1,1,1] },
+    { "name":"Lance Fighter",      "movement": "Infantry", "weapon": "Lance",      "baseRarity": 1, "baseStats": [1,1,1,1,1],    "growthValues": [1,1,1,1,1] },
+    { "name":"Lance Flier",        "movement": "Flying",   "weapon": "Lance",      "baseRarity": 1, "baseStats": [1,1,1,1,1],    "growthValues": [1,1,1,1,1] },
+    { "name":"Lance Knight",       "movement": "Armored",  "weapon": "Lance",      "baseRarity": 1, "baseStats": [1,1,1,1,1],    "growthValues": [1,1,1,1,1] },
+    { "name":"Red Cavalier",       "movement": "Cavalry",  "weapon": "Red Tome",   "baseRarity": 1, "baseStats": [1,1,1,1,1],    "growthValues": [1,1,1,1,1] },
+    { "name":"Thief",              "movement": "Infantry", "weapon": "Dagger",     "baseRarity": 1, "baseStats": [1,1,1,1,1],    "growthValues": [1,1,1,1,1] },
+
+    { "name":"Camus",              "movement": "Cavalry",  "weapon": "Lance",      "baseRarity": 3, "baseStats": [17,7,8,6,3],   "growthValues": [7,7,7,7,2] },
+    { "name":"Effie",              "movement": "Armored",  "weapon": "Lance",      "baseRarity": 4, "baseStats": [21,12,4,11,3], "growthValues": [9,9,4,6,5] },
+    { "name":"Elincia",            "movement": "Flying",   "weapon": "Sword",      "baseRarity": 5, "baseStats": [16,8,10,5,8],  "growthValues": [5,8,8,5,5] },
+    { "name":"Ephraim",            "movement": "Infantry", "weapon": "Lance",      "baseRarity": 5, "baseStats": [19,9,6,8,5],   "growthValues": [8,8,5,7,3] },
+    { "name":"Hinoka",             "movement": "Flying",   "weapon": "Lance",      "baseRarity": 5, "baseStats": [19,7,8,6,7],   "growthValues": [6,9,7,5,4] },
+    { "name":"Olivia",             "movement": "Infantry", "weapon": "Sword",      "baseRarity": 1, "baseStats": [15,4,5,3,2],   "growthValues": [5,6,8,6,6] },
+    { "name":"Leo",                "movement": "Cavalry",  "weapon": "Red Tome",   "baseRarity": 5, "baseStats": [17,7,5,6,8],   "growthValues": [6,6,4,5,6] },
+    { "name":"Lyn (Brave Heroes)", "movement": "Cavalry",  "weapon": "Bow",        "baseRarity": 5, "baseStats": [16,7,9,5,6],   "growthValues": [5,8,8,2,6] },
+    { "name":"Matthew",            "movement": "Infantry", "weapon": "Dagger",     "baseRarity": 2, "baseStats": [15,5,9,4,3],   "growthValues": [7,5,7,7,2] },
+    { "name":"Marth",              "movement": "Infantry", "weapon": "Sword",      "baseRarity": 4, "baseStats": [18,7,8,6,5],   "growthValues": [6,7,8,6,4] },
+    { "name":"Michalis",           "movement": "Flying",   "weapon": "Axe",        "baseRarity": 3, "baseStats": [18,7,6,8,3],   "growthValues": [7,8,5,8,3] },
+    { "name":"Nino",               "movement": "Infantry", "weapon": "Green Tome", "baseRarity": 3, "baseStats": [15,6,9,3,6],   "growthValues": [4,8,8,3,5] },
+    { "name":"Sakura",             "movement": "Infantry", "weapon": "Staff",      "baseRarity": 4, "baseStats": [16,5,8,4,8],   "growthValues": [5,6,6,5,6] },
+    { "name":"Takumi",             "movement": "Infantry", "weapon": "Bow",        "baseRarity": 5, "baseStats": [18,8,7,6,5],   "growthValues": [6,7,8,5,2] },
+    { "name":"Tharja",             "movement": "Infantry", "weapon": "Red Tome",   "baseRarity": 4, "baseStats": [16,8,8,5,4],   "growthValues": [6,7,8,4,3] },
+    { "name":"Robin (M)",          "movement": "Infantry", "weapon": "Blue Tome",  "baseRarity": 3, "baseStats": [17,6,6,6,4],   "growthValues": [6,6,6,6,4] },
+    { "name":"Roy (Brave Heroes)", "movement": "Cavalry",  "weapon": "Sword",      "baseRarity": 5, "baseStats": [16,8,8,7,7],   "growthValues": [6,7,8,5,4] },
+    { "name":"Ryoma",              "movement": "Infantry", "weapon": "Sword",      "baseRarity": 5, "baseStats": [19,8,11,5,4],  "growthValues": [6,8,7,6,4] },
+    { "name":"Serra",              "movement": "Infantry", "weapon": "Staff",      "baseRarity": 3, "baseStats": [15,5,8,3,8],   "growthValues": [4,7,6,4,7] },
+    { "name":"Tana",               "movement": "Flying",   "weapon": "Lance",      "baseRarity": 5, "baseStats": [17,8,10,6,6],  "growthValues": [5,8,8,5,5] },
+    { "name":"Valter",             "movement": "Flying",   "weapon": "Lance",      "baseRarity": 3, "baseStats": [17,7,8,7,3],   "growthValues": [7,7,6,8,3] }
+]

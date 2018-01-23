@@ -2,48 +2,31 @@
 <html lang="en">
 
 <head>
-
     <meta charset="utf-8">
     <title>FEHSIM</title>
     <meta name="description" content="The HTML5 Herald">
     <meta name="author" content="SitePoint">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-
     <!--
     <base href="https://bardackx.github.io/fehsim/index.html">
     -->
-        
-    </body>
-    </html>
+</head>
 
-    <link rel="stylesheet" href="res/css/styles.css">
-    <link rel="stylesheet" href="res/css/status.css">
-    <link rel="stylesheet" href="res/css/tiles.css">
-    <link rel="stylesheet" href="res/css/pop-up.css">
-
-    <script src="js/feh/common.js"></script>
-
-    <script src="js/feh/core/map.js"></script>
-    <script src="js/feh/core/unit.js"></script>
-    <script src="js/feh/core/skill.js"></script>
-    <script src="js/feh/core/battle.js"></script>
-    <script src="js/feh/core/combat.js"></script>
-    <script src="js/feh/core/movement.js"></script>
-
-    <script src="js/feh/gui/battle-gui.js"></script>
-    <script src="js/feh/gui/state-gui.js"></script>
-    <script src="js/feh/gui/tile-gui.js"></script>
-    <script src="js/feh/gui/unit-gui.js"></script>
-
-    <script src="js/feh/ai/ai.js"></script>
-
+</html>
+<link rel="stylesheet" href="res/css/teambuild.css">
+<link rel="stylesheet" href="res/css/fehsim.css">
+<link rel="stylesheet" href="res/css/status.css">
+<link rel="stylesheet" href="res/css/pop-up.css">
+<script type="module" src="js/fehsim/module.js"></script>
 </head>
 
 <body>
-    <div id='game-div'></div>
-    <script src="script.js"></script>
+    <div class='app-header'></div>
+    <div id='battle-menu' class="hidden"></div>
+    <div id='builder' class="hidden"></div>
+    <div id='battle'></div>
+    <script type="module" src="app.js"></script>
 </body>
 
 </html>

@@ -6,18 +6,18 @@
 @keyframes phase-change-text {
     0% {
         opacity:0;
-        transform:translate(calc(var(--tile-size) * -3), 0) scale(1, 0);
+        transform:translate(calc(var(--tile-size) * -3px), 0) scale(1, 0);
     }
     15% {
         opacity:1;
-        transform:translate(calc(var(--tile-size) * -0.125), 0) scale(1, 1);
+        transform:translate(calc(var(--tile-size) * -0.125px), 0) scale(1, 1);
     }    
     85% {
         opacity:1;
-        transform:translate(calc(var(--tile-size) * +0.125), 0) scale(1, 1);
+        transform:translate(calc(var(--tile-size) * +0.125px), 0) scale(1, 1);
     }
     100% {
-        transform:translate(calc(var(--tile-size) * +3), 0) scale(1,0);
+        transform:translate(calc(var(--tile-size) * +3px), 0) scale(1,0);
         opacity:0;
     }
 }
@@ -33,7 +33,7 @@
     }
 }
 
-.phase-change-msg {--phase-change-msg-duration: 1.0s; /* 1.0s */position:absolute;width:0;height:0;top:0;left:0;display:flex;flex-flow:column;align-items:center;color:#ffffff;overflow:hidden;z-index:999100;}
+.phase-change-msg {--phase-change-msg-duration: 1.0s; /* 1.0s */position:absolute;width:0;height:0;top:0;left:0;display:flex;flex-flow:column;align-items:center;color:#ffffff;overflow:hidden;z-index:10;}
 
 .phase-change-msg h1, .phase-change-msg h2 {
     z-index:2;
@@ -45,22 +45,23 @@
 
 .phase-change-msg h1 {
     margin: auto 0 0 0;
-    font-size: calc(var(--tile-size) * 0.70);
+    font-size: calc(var(--tile-size) * 0.70px);
     text-transform:uppercase;
 }
 
 .phase-change-msg h2 {
     margin: 0 0 auto 0;
-    font-size: calc(var(--tile-size) * 0.30);
+    font-size: calc(var(--tile-size) * 0.30px);
 }
 
 .phase-change-background {
     background:black;
     position:absolute;
     width:100%;
-    height:100%;
+    height: calc(var(--tile-size)*8px);
     z-index:0;
     opacity:0.5;
+    bottom: 0;
 }
 
 .phase-change-msg.animate {
