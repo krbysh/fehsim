@@ -132,18 +132,18 @@ body {
     transform: scale( calc( var(--tile-raw) / 72 * 0.4));
 }
 
-.hero .weapon-icon.WEAPON_SWORD { background-position: calc(-56px * 0) 56px; }
-.hero .weapon-icon.WEAPON_LANCE { background-position: calc(-56px * 1) 56px; }
-.hero .weapon-icon.WEAPON_AXE { background-position: calc(-56px * 2) 56px; }
-.hero .weapon-icon.WEAPON_BOW { background-position: calc(-56px * 3) 56px; }
-.hero .weapon-icon.WEAPON_DAGGER { background-position: calc(-56px * 4) 56px; }
-.hero .weapon-icon.WEAPON_RED_TOME { background-position: calc(-56px * 5) 56px; }
-.hero .weapon-icon.WEAPON_BLUE_TOME { background-position: calc(-56px * 6) 56px; }
-.hero .weapon-icon.WEAPON_GREEN_TOME { background-position: calc(-56px * 7) 56px; }
-.hero .weapon-icon.WEAPON_STAFF { background-position: calc(-56px * 8) 56px; }
-.hero .weapon-icon.WEAPON_RED_BREATH { background-position: calc(-56px * 9) 56px; }
-.hero .weapon-icon.WEAPON_BLUE_BREATH { background-position: calc(-56px * 10) 56px; }
-.hero .weapon-icon.WEAPON_GREEN_BREATH { background-position: calc(-56px * 11) 56px; }
+.hero .weapon-icon.Sword { background-position: calc(-56px * 0) 56px; }
+.hero .weapon-icon.Lance { background-position: calc(-56px * 1) 56px; }
+.hero .weapon-icon.Axe { background-position: calc(-56px * 2) 56px; }
+.hero .weapon-icon.Bow { background-position: calc(-56px * 3) 56px; }
+.hero .weapon-icon.Dagger { background-position: calc(-56px * 4) 56px; }
+.hero .weapon-icon.RedTome { background-position: calc(-56px * 5) 56px; }
+.hero .weapon-icon.BlueTome { background-position: calc(-56px * 6) 56px; }
+.hero .weapon-icon.GreenTome { background-position: calc(-56px * 7) 56px; }
+.hero .weapon-icon.Staff { background-position: calc(-56px * 8) 56px; }
+.hero .weapon-icon.RedBreath { background-position: calc(-56px * 9) 56px; }
+.hero .weapon-icon.BlueBreath { background-position: calc(-56px * 10) 56px; }
+.hero .weapon-icon.GreenBreath { background-position: calc(-56px * 11) 56px; }
 
 .hero .life-bar {
     width: auto;
@@ -324,7 +324,7 @@ body {
     --font-size: 14px;
 }
 body {
-        background: #1b1b1b !important;
+        background: #d4d4d4 !important;
 }
 
 
