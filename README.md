@@ -33,4 +33,4 @@ Well, this
 
 ## Whishlist
 
-I wish somebody could write everything related to unit/team building, that would be nice
+I wish somebody could write everything related to unit/team building, that would be nice!
